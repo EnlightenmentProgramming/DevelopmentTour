@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dos.Common">
+      <HintPath>..\lib\Dos.Common.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,9 +44,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Comunication\WsSocket.cs" />
+    <Compile Include="ConfigBLL\T_ConfigBLL.cs" />
+    <Compile Include="ConvertData\AnalyzeData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{2AD49A20-1A21-4109-85E8-CBF656C3FE77}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DAL\DAL.csproj">
+      <Project>{0483DDBD-8044-45D9-B3FC-4B5D3AD86363}</Project>
+      <Name>DAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{ed7c34c9-64fe-4556-8c2c-eca0d7775029}</Project>
       <Name>Model</Name>

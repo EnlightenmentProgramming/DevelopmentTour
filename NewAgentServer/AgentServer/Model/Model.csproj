@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dos.ORM">
+      <HintPath>..\lib\Dos.ORM.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,8 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Comunication\ClientOP.cs" />
+    <Compile Include="Comunication\ComunicationMsg.cs" />
+    <Compile Include="Comunication\HeadMessage.cs" />
+    <Compile Include="Comunication\ErrorMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqliteModel\T_Config.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -89,6 +89,7 @@
             this.Controls.Add(this.cmb_IP);
             this.Name = "WatchWindow";
             this.Text = "AgentService";
+            this.Load += new System.EventHandler(this.WatchWindow_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
