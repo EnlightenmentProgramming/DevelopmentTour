@@ -47,6 +47,7 @@
     <Compile Include="Comunication\ComunicationMsg.cs" />
     <Compile Include="Comunication\HeadMessage.cs" />
     <Compile Include="Comunication\ErrorMessage.cs" />
+    <Compile Include="Comunication\RequestMsg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqliteModel\T_Config.cs" />
   </ItemGroup>

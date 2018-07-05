@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dos.ORM, Version=1.10.7.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Dos.ORM.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,6 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SetConfig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetConfig.Designer.cs">
+      <DependentUpon>SetConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="WatchWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -54,6 +64,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="SetConfig.resx">
+      <DependentUpon>SetConfig.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WatchWindow.resx">
       <DependentUpon>WatchWindow.cs</DependentUpon>
     </EmbeddedResource>

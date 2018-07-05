@@ -95,7 +95,7 @@ namespace BLL.Comunication
             {
                 if (acceptEventArgs.SocketError != SocketError.Success || isStop)
                 {
-                    if (isStop)
+                    if (!isStop)
                         StartAccept();
                     closeConnect(acceptEventArgs.AcceptSocket);
                     acceptEventArgs = null;
@@ -106,7 +106,7 @@ namespace BLL.Comunication
                 reciveEventArgs.SetBuffer(new byte[65536], 0, 65536);//分配数据缓存空间
                 reciveEventArgs.AcceptSocket = acceptEventArgs.AcceptSocket;
                 acceptEventArgs = null;
-                ProcessRecive(reciveEventArgs);//处理接收到的数据
+                StartRecive(reciveEventArgs);//处理接收到的数据
                 StartAccept();//继续等待下一次连接请求
             }
             catch (Exception ex)
@@ -187,13 +187,19 @@ namespace BLL.Comunication
                         {
                             string decodeMsg = ZipHelper.GZipDecompressString(msg);//将接收到的数据进行Gizp解压
                             AnalyzeData analzeData = new AnalyzeData();
-                            string sendMsg = analzeData.StartAnalyze(decodeMsg, client);
-                            Send(sendMsg, client.cSocket);
+                            bool isZ;
+                            string sendMsg = analzeData.StartAnalyze(decodeMsg, client,out isZ);
+                            Send(sendMsg, client.cSocket, isZ);
+                            //Send(decodeMsg, client.cSocket);
+                        }
+                        if(client.Pac_Type == 101)
+                        {
+                            Send("socket连接成功", client.cSocket, false);
                         }
                     }
                     else//Analyze方法的else
                     {
-                        Send("数据解析失败", client.cSocket);
+                        Send("数据解析失败", client.cSocket,false);
                         client = null;
                         closeConnect(reciveEventArgs.AcceptSocket);
                         dic_Clients.TryRemove(client.ConID, out client);
@@ -261,7 +267,7 @@ namespace BLL.Comunication
                 if (dic_Clients.ContainsKey(connID) && client.Pac_Type == 101)
                 {
                     //同个IP重复登录（注：您也可以自己定义key的值，这里把IP作为key）
-                    Send("同个IP已重复登录：", dic_Clients[connID].cSocket);//发出提醒
+                    Send("同个IP已重复登录：", dic_Clients[connID].cSocket,false);//发出提醒
                     closeConnect(dic_Clients[connID].cSocket);//关闭旧连接
                 }
                 else
@@ -405,13 +411,20 @@ namespace BLL.Comunication
                 LogHelper.WriteLog(typeof(WsSocket), ex);
             }
         }
-       
-        public bool Send(string msg,Socket socket)
+        /// <summary>
+        /// 发送socket报文
+        /// </summary>
+        /// <param name="msg">需要发送的报文</param>
+        /// <param name="socket">客户端对象</param>
+        /// <param name="isZ">发送的报文是否需要Gzip压缩</param>
+        /// <returns></returns>
+        public bool Send(string msg,Socket socket,bool isZ)
         {
             try
             {
-                string zipMsg = ZipHelper.GZipCompressString(msg);//把发送信息做Gzip压缩
-                byte[] bytes = Encoding.ASCII.GetBytes(zipMsg);
+                string sendMsg = isZ ? ZipHelper.GZipCompressString(msg) : msg;
+                //string zipMsg = ZipHelper.GZipCompressString(msg);//把发送信息做Gzip压缩
+                byte[] bytes = isZ ? Encoding.ASCII.GetBytes(sendMsg) : Encoding.UTF8.GetBytes(sendMsg);
                 bool isSend = true;
                 int sendMax = 65536;//每次分片最大64kb数据
                 int count = 0;//发送的次数
@@ -472,7 +485,6 @@ namespace BLL.Comunication
                 return false;
             }
         }
-
         /// <summary>
         /// 删除字典里的连接
         /// </summary>
@@ -487,6 +499,50 @@ namespace BLL.Comunication
             {
                 if (dic_Clients.TryRemove(conid, out _cp))
                     closeConnect(cp.cSocket);
+            }
+        }
+        /// <summary>
+        /// 开始监听
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public bool StartListen(string ip,string port)
+        {
+            try
+            {
+                ListenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+                ListenSocket.Bind(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)));
+                ListenSocket.Listen(Int32.MaxValue);
+                isStop = false;
+                StartAccept();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(WsSocket), ex);
+                return false;
+            }
+        }
+        /// <summary>
+        /// 停止监听，断开所有连接
+        /// </summary>
+        public void StopListen()
+        {
+            try
+            {
+                isStop = true;
+                foreach (KeyValuePair<string, ClientOP> kv in dic_Clients)
+                {
+                    if (kv.Value.cSocket.Connected)
+                        closeConnect(kv.Value.cSocket);
+                    dic_Clients.Clear();
+                    closeConnect(ListenSocket);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(WsSocket), ex);
             }
         }
         #endregion

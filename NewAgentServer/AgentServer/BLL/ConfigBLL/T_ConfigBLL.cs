@@ -1,4 +1,5 @@
-﻿using DAL.ConfigDAL;
+﻿using Common;
+using DAL.ConfigDAL;
 using Model.SqliteModel;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,28 @@ namespace BLL.ConfigBLL
         /// <returns></returns>
         public T_Config GetConfig()
         {
-            return configDal.GetConfig();
+            try
+            {
+                return configDal.GetConfig();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(T_ConfigDAL), ex);
+                return null;
+            }
         }
+        public bool UpdateConfig(T_Config model)
+        {
+            try
+            {
+                return configDal.UpdateConfig(model);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(T_ConfigBLL), ex);
+                return false;
+            }
+        }
+
     }
 }

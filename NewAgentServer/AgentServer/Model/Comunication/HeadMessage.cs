@@ -20,6 +20,10 @@ namespace Model.Comunication
         /// </summary>
         public string Token { get; set; }
         /// <summary>
+        /// 客户端Ip地址
+        /// </summary>
+        public string Ip { get; set; }
+        /// <summary>
         /// 交易接口名称
         /// </summary>
         public string Method { get; set; }

@@ -33,6 +33,14 @@
             this.btn_Start = new System.Windows.Forms.Button();
             this.btn_End = new System.Windows.Forms.Button();
             this.btn_Setting = new System.Windows.Forms.Button();
+            this.list_Clients = new System.Windows.Forms.ListView();
+            this.Address = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Ip = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ComTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.State = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ConID = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.LoginID = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.KeepTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // cmb_IP
@@ -58,6 +66,7 @@
             this.btn_Start.TabIndex = 2;
             this.btn_Start.Text = "监听";
             this.btn_Start.UseVisualStyleBackColor = true;
+            this.btn_Start.Click += new System.EventHandler(this.btn_Start_Click);
             // 
             // btn_End
             // 
@@ -67,6 +76,7 @@
             this.btn_End.TabIndex = 3;
             this.btn_End.Text = "停止";
             this.btn_End.UseVisualStyleBackColor = true;
+            this.btn_End.Click += new System.EventHandler(this.btn_End_Click);
             // 
             // btn_Setting
             // 
@@ -76,12 +86,73 @@
             this.btn_Setting.TabIndex = 4;
             this.btn_Setting.Text = "设置参数";
             this.btn_Setting.UseVisualStyleBackColor = true;
+            this.btn_Setting.Click += new System.EventHandler(this.btn_Setting_Click);
+            // 
+            // list_Clients
+            // 
+            this.list_Clients.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Address,
+            this.Ip,
+            this.ComTime,
+            this.State,
+            this.ConID,
+            this.LoginID,
+            this.KeepTime});
+            this.list_Clients.FullRowSelect = true;
+            this.list_Clients.GridLines = true;
+            this.list_Clients.Location = new System.Drawing.Point(12, 47);
+            this.list_Clients.Name = "list_Clients";
+            this.list_Clients.Size = new System.Drawing.Size(1238, 479);
+            this.list_Clients.TabIndex = 5;
+            this.list_Clients.UseCompatibleStateImageBehavior = false;
+            this.list_Clients.View = System.Windows.Forms.View.Details;
+            // 
+            // Address
+            // 
+            this.Address.Text = "地址";
+            this.Address.Width = 200;
+            // 
+            // Ip
+            // 
+            this.Ip.Text = "IP";
+            this.Ip.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.Ip.Width = 120;
+            // 
+            // ComTime
+            // 
+            this.ComTime.Text = "通讯时间";
+            this.ComTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.ComTime.Width = 127;
+            // 
+            // State
+            // 
+            this.State.Text = "状态";
+            this.State.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // ConID
+            // 
+            this.ConID.Text = "唯一键";
+            this.ConID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.ConID.Width = 160;
+            // 
+            // LoginID
+            // 
+            this.LoginID.Text = "登录ID";
+            this.LoginID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.LoginID.Width = 130;
+            // 
+            // KeepTime
+            // 
+            this.KeepTime.Text = "发呆/分钟";
+            this.KeepTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.KeepTime.Width = 70;
             // 
             // WatchWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1260, 551);
+            this.Controls.Add(this.list_Clients);
             this.Controls.Add(this.btn_Setting);
             this.Controls.Add(this.btn_End);
             this.Controls.Add(this.btn_Start);
@@ -102,6 +173,14 @@
         private System.Windows.Forms.Button btn_Start;
         private System.Windows.Forms.Button btn_End;
         private System.Windows.Forms.Button btn_Setting;
+        private System.Windows.Forms.ListView list_Clients;
+        private System.Windows.Forms.ColumnHeader Address;
+        private System.Windows.Forms.ColumnHeader Ip;
+        private System.Windows.Forms.ColumnHeader ComTime;
+        private System.Windows.Forms.ColumnHeader State;
+        private System.Windows.Forms.ColumnHeader ConID;
+        private System.Windows.Forms.ColumnHeader LoginID;
+        private System.Windows.Forms.ColumnHeader KeepTime;
     }
 }
 
