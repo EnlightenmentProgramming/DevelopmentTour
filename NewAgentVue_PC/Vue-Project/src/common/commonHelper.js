@@ -364,4 +364,20 @@ export function deepCopy (obj, cache = []) {
 
   return copy
 }
-
+/**
+ * [sendProcess 组装发送报文]
+ * @param  {[type]} headMsg [头部报文]
+ * @param  {[type]} request [请求参数报文]
+ * @return {[type]}         [description]
+ */
+export function sendProcess(headMsg,request){
+    try{
+        var sendMsg = {
+            Head: JSON.stringify(headMsg),
+            Request: JSON.stringify(request),
+        };
+        return JSON.stringify(sendMsg);
+    }catch(e){
+        return null;
+    }
+}

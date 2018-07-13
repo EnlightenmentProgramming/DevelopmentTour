@@ -9,7 +9,7 @@ import reciveMsg from './modules/reciveMsg'
 export default {
 	state: {
 		wsSocket: null,//websocket 连接对象
-		url: '192.168.1.106:1179',//websocket 连接地址
+		url: null,//websocket 连接地址'192.168.1.106:1179'
 		timeOut: 10000,
 		timeOutObj: null,//心跳循环
 		heart: 0,//心跳计数器
@@ -19,17 +19,7 @@ export default {
 		lockReconnect: false,//是否是首次连接
 		isZ: "N",//通讯报文是否压缩 N--不压缩 Y --压缩
 	},//state The End
-	mutations: {
-		/**
-		 * [getConnectUrl 获取websocket连接地址]
-		 * @return {[type]} [description]
-		 */
-		getConnectUrl(state) {
-			getSetting((val)=>{
-				var jsonData = JSON.parse(val);
-				state.url = jsonData.socket;
-			})
-		},	
+	mutations: {			
 		/**
 		 * [upWsSocket 更新wsSocket的状态]
 		 * @param  {[type]} state [description]
@@ -96,89 +86,97 @@ export default {
 	},//mutations The End
 	actions: {
 		/**
+		 * [getConnectUrl 获取websocket连接地址]
+		 * @return {[type]} [description]
+		 */
+		getConnectUrl({state,commit}) {
+			getSetting((val)=>{
+				var jsonData = JSON.parse(val);
+				commit('upUrl',jsonData.socket);
+			})
+		},	
+		/**
 		 * [connetWebSocket 连接websocket]
 		 * @param  {[type]} state [description]
 		 * @return {[type]}       [description]
 		 */
-		connetWebSocket({commit,state,dispatch}) {
-			// getSetting((val)=>{
-			// 	var jsonData = JSON.parse(val);
-			// 	commit('upUrl',jsonData.socket);
-			// 	//state.url = jsonData.socket;
-			// })
-			//var ws = null;
-			var store = {commit,state,dispatch};
-			if(typeof(WebSocket) != undefined) {
-				try {
-					commit('upWsSocket',new  WebSocket('ws://'+state.url+'/ws'));
-					//state.wsSocket = new  WebSocket('ws://'+state.url+'/ws');		
-				}catch (e) {
-					console.log("网络连接异常,自动重连中...");
+		connetWebSocket({commit,state,dispatch}) {	
+			dispatch('getConnectUrl').then(setTimeout(()=>{
+				//var store = {commit,state,dispatch};
+				if(typeof(WebSocket) != undefined) {
+					try {
+						// console.log(connctUrl);
+						commit('upWsSocket',new  WebSocket('ws://'+state.url+'/ws'));
+						//state.wsSocket = new  WebSocket('ws://'+state.url+'/ws');		
+					}catch (e) {
+						console.log("网络连接异常,自动重连中...");
+						state.wsSocket.close();
+					}
+				}else {
+					console.log("您的浏览器不支持websocket");
+					return;
+				}
+				//if(!state.wsSocket) return console.log("网络连接异常,请联系管理员...");
+				/**
+				 * [ononpen 连接成功打开]
+				 * @return {[type]} [description]
+				 */
+				state.wsSocket.onopen = function() {
+					commit('upLockReconnect',false);
+					console.log('socket opened');
+					dispatch('start');
+					commit('upReCon',0);
+					//state.reCon = 0;
+					clearInterval(state.ReObj);
+					commit('upIsSocket',true);
+					commit('upIsZ',"Y");
+					dispatch('sendSocketMsg',JSON.stringify({Head:"{\"Method\":\"HeartBeat\"}"}));//连接成功就发送心跳包
+				}
+				/**
+				 * [onerror websocket连接出错]
+				 * @return {[type]} [description]
+				 */
+				state.wsSocket.onerror = function() {
+					console.log('socket error');
 					state.wsSocket.close();
+					commit('upIsSocket',false);
+					// console.log(store);
+					//state.isSocket = false;
 				}
-			}else {
-				console.log("您的浏览器不支持websocket");
-				return;
-			}
-			//if(!state.wsSocket) return console.log("网络连接异常,请联系管理员...");
-			/**
-			 * [ononpen 连接成功打开]
-			 * @return {[type]} [description]
-			 */
-			state.wsSocket.onopen = function() {
-				commit('upLockReconnect',false);
-				console.log('socket opened');
-				dispatch('start');
-				commit('upReCon',0);
-				//state.reCon = 0;
-				clearInterval(state.ReObj);
-				commit('upIsSocket',true);
-				commit('upIsZ',"Y");
-				dispatch('sendSocketMsg',JSON.stringify({Head:"{\"Method\":\"HeartBeat\"}"}));//连接成功就发送心跳包
-			}
-			/**
-			 * [onerror websocket连接出错]
-			 * @return {[type]} [description]
-			 */
-			state.wsSocket.onerror = function() {
-				console.log('socket error');
-				state.wsSocket.close();
-				commit('upIsSocket',false);
-				// console.log(store);
-				//state.isSocket = false;
-			}
-			/**
-			 * [onclose 连接关闭]
-			 * @return {[type]} [description]
-			 */
-			state.wsSocket.onclose = function() {
-				console.log('socket closed');
-				dispatch('reset');
-				commit('upIsSocket',false);
-				dispatch('reConnect');
-			}	
-			/**
-			 * [onmessage 接收socket消息]
-			 * @return {[type]} [description]
-			 */
-			state.wsSocket.onmessage = function(e) {
-				// console.log(e);
-				console.log('recive message');
-				if(typeof(e.data) !== 'string' ) return;
-				try {
-					var reciveData = state.isZ == 'Y' ? pako.inflate(atob(e.data),{ to: 'string' }) : e.data;
-					if(reciveData.indexOf('{') === -1) {
-						console.log(reciveData);
-					}else {
-						var reciveJson = JSON.parse(reciveData);
-						console.log(reciveData);
-						dispatch('analyzeData',reciveJson);
-					}		
-				} catch(ex) {
-					console.log(e.data);
+				/**
+				 * [onclose 连接关闭]
+				 * @return {[type]} [description]
+				 */
+				state.wsSocket.onclose = function() {
+					console.log('socket closed');
+					dispatch('reset');
+					commit('upIsSocket',false);
+					dispatch('reConnect');
+				}	
+				/**
+				 * [onmessage 接收socket消息]
+				 * @return {[type]} [description]
+				 */
+				state.wsSocket.onmessage = function(e) {
+					// console.log(e);
+					console.log('recive message');
+					if(typeof(e.data) !== 'string' ) return;
+					try {
+						var reciveData = state.isZ == 'Y' ? pako.inflate(atob(e.data),{ to: 'string' }) : e.data;
+						if(reciveData.indexOf('{') === -1) {
+							console.log(reciveData);
+						}else {
+							var reciveJson = JSON.parse(reciveData);
+							console.log(reciveData);
+							dispatch('analyzeData',reciveJson);
+						}		
+					} catch(ex) {
+						console.log(e.data);
+					}
+					
 				}
+			}),5)
 				
-			}	
 		},//connetWebSocket The End
 		/**
 		 * [reset 重置心跳]

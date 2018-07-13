@@ -48,6 +48,13 @@
     <Compile Include="Comunication\HeadMessage.cs" />
     <Compile Include="Comunication\ErrorMessage.cs" />
     <Compile Include="Comunication\RequestMsg.cs" />
+    <Compile Include="DBModel\T_Agent.cs" />
+    <Compile Include="DBModel\T_Client.cs" />
+    <Compile Include="DBModel\T_LoginLog.cs" />
+    <Compile Include="DBModel\T_OperationLog.cs" />
+    <Compile Include="DBModel\T_SettleAccount.cs" />
+    <Compile Include="DBModel\T_TransactionLog.cs" />
+    <Compile Include="LogicModel\AgentSearchModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqliteModel\T_Config.cs" />
   </ItemGroup>

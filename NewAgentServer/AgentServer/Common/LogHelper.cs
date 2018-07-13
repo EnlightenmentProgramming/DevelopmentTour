@@ -49,5 +49,15 @@ namespace Common
             log4net.ILog log = log4net.LogManager.GetLogger(t);
             log.Warn(msg);
         }
+        /// <summary>
+        /// 写错误日志
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="msg"></param>
+        public static void WriteErrLog(Type t,string msg)
+        {
+            log4net.ILog log = log4net.LogManager.GetLogger(t);
+            log.Error(msg);
+        }
     }
 }

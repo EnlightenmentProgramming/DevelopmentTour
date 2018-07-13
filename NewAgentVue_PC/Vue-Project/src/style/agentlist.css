@@ -1,0 +1,153 @@
+	/* 代理列表 */
+	.temBox{position: absolute;width: 100%;box-sizing: border-box;}
+	#agentList,#clientList{padding: 8px;position: relative;top: 97px;box-sizing: border-box;min-width: 1460px;}
+	#agentList td,#agentList tr,#agentList table{border-spacing: 0;}
+	#agentList a{text-decoration: none;}
+	.TextCenter{text-align: center;}
+	.Grid{box-sizing: border-box;margin-top: 5px;position: relative;overflow-x: scroll;min-width: 1094px;min-height: 300px;}
+	.navbox{text-align:left;height:30px;font-size: 0;margin-bottom: 10px ;}
+	input,input{width: 180px;padding:4px 10px;box-sizing:border-box;vertical-align:top;margin: 0 5px;}	
+	input[type='checkbox']{width: 80px;}
+	.agentInput{height: 30px;margin:0 10px 0 0;}
+	.btn{background-color:#5897c3;border:0;color:#fff;padding:5px 20px;margin-right: 10px;height: 28px;width:60px; font-size: 16px;border-radius: 3px;}
+	.Nav{display:inline-block;margin-left:15px;}
+	.headBg{background-color:#e2e2e2;}
+	.T_head th{padding: 10px 6px;font-size: 14px;border-right: 1px solid #ccc;}
+	#agentTable{border-bottom: 1px solid #ccc;border-top:1px solid #ccc;width: 100%;min-width: 2210px;}
+	#agentTable td{border-top: 1px solid #ccc;border-right: 1px solid #ccc;box-sizing:border-box;padding:2px 8px 5px 8px;font-size:14px;}
+	.headTable > td{border-bottom:1px solid #ccc;background-color:#f2f2f2;}
+	.BorderLeft{border-left: 1px solid #ccc;}
+	.vip{text-align: center;}
+	.vip button{border:0;background-color:#da4f49;border-radius: 4px;padding: 4px 8px;color: #fff;}
+	.BtnBox{padding: 0 10px;position: relative;}
+	.ColorText{color: red;}
+	.noBlance .banlce{background-color: #E0EEE0;}
+	.banlce{background-color:#fcf8e3;}
+	.BtnBox button{border:0;color:#fff;box-sizing:boreder-box;padding:4px 8px;border-radius:4px;cursor: pointer;}
+	.BtnBox button:nth-child(1){background-color:#49afcd;}
+	.BtnBox button:nth-child(2){background-color:#337ab7;}
+	.BtnBox button:nth-child(3){background-color:#ff9412;}
+	.BtnBox button:nth-child(4){background-color:#5bb75b;}
+	.BtnBox button:nth-child(5){background-color:#da4f49;}
+	.BtnBox button:nth-child(6){background-color:red;}
+	.BtnBox button:nth-child(7){background-color:#49afcd;}
+	.BtnBox button:nth-child(8){background-color:#337ab7;}
+	.X_ma{background-color: rgba(119,119,119,.8); width: 55px;text-align: center; display:inline-block;box-sizing: border-box;padding: 5px;border-radius: 15px;color: #fff;margin: 0 5px;padding:5px 5px 5px 10px;height: 25px;line-height: 16px;}
+	.ZC{background-color:rgba(91,192,222,.8);}
+	div.disable{cursor: no-drop;}
+	.TextBox{border:1px solid #999;height: 22px;border-radius: 5px;width: 75px; padding: 0 10px 0 10px;position: relative;}
+	.CreateTime{font-size: 12px;width: 120px;height: 20px;display: inline-block;white-space: nowrap;overflow: hidden;text-overflow:ellipsis;line-height: 30px;}
+	.AgentName{width: 80px;display: inline-block;white-space: nowrap;overflow: hidden;text-overflow:ellipsis;height: 21px;position: relative;top: 5px;}
+	#agentTable .StyleBtn{padding: 0;}
+	#agentTable .StyleBtn .BtnBox{padding: 0 2px;}
+	.searchBox{position: absolute;z-index: 99; right: 20px;background-color: #fff;height: 50px;border: 1px solid #999;border-radius: 3px;width: 260px;padding-left: 4px;display: none;}
+	.searchBox input{border:1px solid #ccc;border-radius: 4px;position: relative;top: 9px;height: 30px;}
+	.searchBox .bGreen{width: 50px;height: 30px;position: relative;top: 9px;border-radius: 4px;color: #fff;}
+	.Other_td{line-height: 13px;position: relative;top:-5px;}
+	.Poin span {display: inline-block;width: 100%;}
+	/* 会员列表 */
+	.listInput{width: 160px;height: 30px;margin: 0 10px 0 0;}
+	.listHead{margin-bottom: 10px;font-size: 0;}
+	.C_agent{background-color: #da4f49;}
+	/* 子账号列表 */
+	.c_listbtn{margin-bottom: 10px;}
+	#agentTable .subChild td{padding:8px;}
+	.subChild .TextBox {top: 0;}
+	.subChild td {text-align: center;}
+	.redio{width: 15px;vertical-align: middle;margin:0;}
+	.C_list button:nth-child(2){background-color: #da4f49;}
+	.listlabel{position: relative;left:-4px;}
+	/* 检索按钮 */
+	#clear{position: absolute;top: -25px;border-left: 1px solid #c3c3c3;width: 90px;height: 29px;line-height: 30px;padding-left: 15px;box-shadow: 1px 0 0 #fff inset;right: 230px;cursor: pointer;}
+	#plus{position: absolute;top: -25px;border-left: 1px solid #c3c3c3;width: 80px;height: 29px;line-height: 30px;padding-left: 5px;box-shadow: 1px 0 0 #fff inset;right: 135px;cursor: pointer;}
+	#Search{position: absolute;right:45px;top:-25px;font-size: 14px; border-left: 1px solid #c3c3c3;width: 60px;height: 29px;line-height: 30px;padding-left: 5px;box-shadow: 1px 0 0 #fff inset; -webkit-box-shadow:1px 0 0 #fff inset; -moz-box-shadow:1px 0 0 #fff inset;cursor: pointer;}
+	/* 代理表格 */
+	input.Agentname_{width: 60px;}
+	.Agentname{width: 40px;margin: 0;padding: 0 5px;position: relative;top: 1px;height: 21px;}
+	.Agentbtn{width: 22px;height: 24px;position: relative;top: -1px; text-align: center;margin:0;font-size: 12px;height: 20px;display: inline-block;padding:0; }
+	#agentTable .PadBox{padding: 0 5px;}
+	.ReInput{width: 65px;padding: 0 5px;}
+	.X_Input{width: 35px;margin-right: 1px;}
+	/* 会员列表表格 */
+	.listBtn{padding: 0;}
+	div.Recheck{float: left;top: 9px;left: 0;}
+	.RechargeInput{width: 60px;padding: 0 5px;margin: 0;position: relative;top: 10px;}
+	.savebtn{width: 55px;text-align: center;height: 25px;}
+	.ReHead{font-size: 12px;position: relative;}
+	#agentTable .ReTh{padding: 0;position: relative;}
+
+	/* 复选框 */
+	.Check{background-color: #fff;border:1px solid #e2e2e2;border-radius: 15px;position: relative;top: 4px;left:5px; height: 25px;width: 50px;cursor: pointer;}
+	.Check i{display: inline-block;width: 20px;height: 20px;border-radius: 10px;position: relative;top: 2px;left: 2px;background-color: #d2d2d2;transition:all .2s linear;}
+
+	.CheckBox{display: inline-block;}
+	.CheckBox input[type='checkbox']{display: none;width: 20px;}
+	.CheckBox .Check:before{content: "否";position: absolute;left: 30px;color: #999;}
+	.CheckBox input:checked + .Check{background-color: #5FB878;}
+	.CheckBox input:checked + .Check i{background-color: #fff;left: 27px;transition:all .2s linear;}
+	.CheckBox input:checked + .Check:before{content:"是";color: #fff;position: absolute;left: 5px;}
+	.CheckBox .Check.type:before{content: "单";}
+	.CheckBox input:checked + .Check.type:before{content:"双";}
+	.CheckBox .Check.Recheck:before{content: "充";}
+	.CheckBox input:checked + .Check.Recheck:before{content:"提";}
+	.CheckBox .Check.cash:before{content: "未";}
+	.CheckBox input:checked + .Check.cash:before{content:"已";}
+
+	/*  右对齐*/
+	.TextRight{text-align: right;}
+
+	/* 暂无数据 */
+	.b_text{height: 50px;line-height: 50px;font-size: 16px;text-align: center;}
+	.Back{font-size: 14px;height: 40px;line-height: 40px;text-align: center;}
+	.Back a{display: inline-block;width: 100px;border: 1px solid #ccc;height: 30px;line-height: 30px;border-radius: 5px;background: rgba(91,192,222,.8);color: #fff;}
+
+	/* 在线玩家 */
+	.TableBox .T_head{padding:8px; font-size: 16px;height: 30px;line-height: 30px;padding-left: 22px;margin-bottom: 10px;}
+	.TableBox .T_head span{padding-left: 15px;}
+	.TableBox ul {font-size: 0;border-left: 1px solid #ccc;margin: 0 10px;display: table;}
+	.TableBox > ul li{border-top: 1px solid #ccc;background-color: #e2e2e2;font-weight: bold;padding: 10px 8px;}
+	.TableBox li{display: inline-block;border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;  padding: 5px 10px;font-size: 14px;text-align: center;}
+	div.TableBox>ul li:nth-child(7),div.TableBox>ul li:nth-child(4){text-align: center;}
+	.TableBox ul li:nth-child(1){width: 100px;}
+	.TableBox ul li:nth-child(2){width: 100px;}
+	.TableBox ul li:nth-child(3){width: 100px;}
+	.TableBox ul li:nth-child(4){width: 100px;text-align: right;}
+	.TableBox ul li:nth-child(5){width: 150px;}
+	.TableBox ul li:nth-child(6){width: 100px;}
+	
+	.TableBox ul li:nth-child(7){width: 100px;}
+	.TableBox ul li:nth-child(8){width: 200px;}
+	.TableBox ul li:nth-child(9){width: 280px;}
+
+	.clearing{position: absolute;background-color: #fff;z-index: 1;width: 883px;padding: 10px;border-radius: 5px;border: 1px solid #ccc;top: 30px;}
+	.clearing ul{font-size: 0;overflow: hidden;text-align: left;border-left: 1px solid #ccc;}
+	.clearing ul.head{border-top: 1px solid #ccc;border-bottom:1px solid #ccc;}
+	.clearing ul.head li{background-color: #f0f0f0;font-size: 14px;border-bottom: 0;height: 30px;}
+	.clearing ul li{display: inline-block;padding: 3px 5px;border-right: 1px solid #ccc;border-bottom: 1px solid #ccc;font-size: 12px;text-align: center;}
+	.clearing ul li:nth-child(1){width: 60px;}
+	.clearing ul li:nth-child(2){width: 100px;}
+	.clearing ul li:nth-child(3){width: 60px;}
+	.clearing ul li:nth-child(4){width: 125px;}
+	.clearing ul li:nth-child(5){width: 125px;}
+	.clearing ul li:nth-child(6){width: 85px;}
+	.clearing ul li:nth-child(7){width: 125px;}
+	.clearing ul li:nth-child(8){width: 80px;}
+	.clearing ul li:nth-child(9){width: 100px;}
+	
+	.BtnBoxs button{border:0;color:#fff;box-sizing:boreder-box;padding:3px 7px;border-radius:4px;cursor: pointer;margin-right: 3px;font-size: 12px;position: relative;top: 1px;}
+	.BtnBoxs button:nth-child(1){background-color:#49afcd;}
+	.BtnBoxs button:nth-child(2){background-color:#337ab7;}
+	.BtnBox button.default{background-color: #ccc;cursor: no-drop;}
+
+	div.Agent{width: 1018px;}
+	div.Agent ul li:nth-child(1){width: 80px;}
+	div.Agent ul li:nth-child(2){width: 60px;}
+	div.Agent ul li:nth-child(3){width: 100px;}
+	div.Agent ul li:nth-child(4){width: 80px;}
+	div.Agent ul li:nth-child(5){width: 125px;}
+	div.Agent ul li:nth-child(6){width: 125px;}
+	div.Agent ul li:nth-child(7){width: 85px;}
+	div.Agent ul li:nth-child(8){width: 125px;}
+	div.Agent ul li:nth-child(9){width: 80px;}
+	div.Agent ul li:nth-child(10){width: 135px;}
+	.textover{overflow:hidden;text-overflow: ellipsis;white-space: nowrap;word-wrap:break-word;width: 105px;}

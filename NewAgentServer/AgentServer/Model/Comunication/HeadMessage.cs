@@ -16,6 +16,10 @@ namespace Model.Comunication
         /// </summary>
         public string Account { get; set; }
         /// <summary>
+        /// 登录用户对应的ID
+        /// </summary>
+        public string LoginID { get; set; }
+        /// <summary>
         /// 登录令牌 登录成功后产生，以后每次请求均需传递
         /// </summary>
         public string Token { get; set; }

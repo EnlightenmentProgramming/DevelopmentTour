@@ -46,6 +46,7 @@
     <Compile Include="Comunication\WsSocket.cs" />
     <Compile Include="ConfigBLL\T_ConfigBLL.cs" />
     <Compile Include="ConvertData\AnalyzeData.cs" />
+    <Compile Include="LogicBLL\LoginBLL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

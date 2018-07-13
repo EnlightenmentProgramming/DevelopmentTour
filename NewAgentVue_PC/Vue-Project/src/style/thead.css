@@ -1,0 +1,57 @@
+#content{position: relative;top: 102px;}
+.map_box{width: 100%;left: 0;}
+#content #agentList{top: 0;}
+.logbox #Search{top: -30px;}
+.connect{position: absolute;top:0px;min-width: 1460px;left: 7px;right:7px;}
+.retrieve{cursor: pointer; position: absolute;right:81px;top:-30px;font-size: 14px; border-left: 1px solid #c3c3c3;width: 60px;height: 29px;line-height: 30px;padding-left: 5px;box-shadow: 1px 0 0 #fff inset; -webkit-box-shadow:1px 0 0 #fff inset; -moz-box-shadow:1px 0 0 #fff inset; z-index: 99;}
+.flex{box-sizing: border-box;-webkit-box-pack: start;-webkit-box-align: start;-webkit-justify-content: space-between;-webkit-align-items: top;justify-content: space-between;align-items: top;flex-flow:row wrap; height:50px;position: absolute;left:0px;width:100%;top:-100px;transition: top 0.5s;display: none;border-bottom: 1px solid #c3c3c3;box-shadow: 0 1px 0 #fff;-webkit-box-shadow: 0 1px 0 #fff;z-index: 1;background: #f3f3f3;}
+.T_Boder{border-right: 1px soild #ccc;border-bottom: 1px solid #ccc;}
+.flex>div>{margin-left:  10px;float: left;}
+.flex>div>button {margin: 10px 10px 10px 0;height: 30px;}
+.countCheckbox{width:175px;font-size: 18px;height: 50px;line-height: 45px;position: absolute;left: 740px;top:4px;}
+.countCheckbox > input{display: none;}
+.countCheckbox > label{font-size: 14px;}
+.flex>div>input {width:200px;margin:5px;border-radius: 2px;border:1px solid #dedede;padding:10px;box-sizing: border-box;font-size: 14px;text-align: center;}
+._calendar{position: absolute;left:890px;top:0;width: 500px;}
+._calendar > i{position: absolute;top: 18px;}
+._calendar > i:nth-child(1){left: 40px;}
+._calendar > i:nth-child(3){left: 253px;}
+._calendar > input{width:120px;margin:5px;border-radius: 5px;border:1px solid #dedede;padding:10px;box-sizing: border-box;padding-left: 36px;color:#666;background: #ececec;}
+.query{position: absolute;left: 20px;width: 300px;font-size: 14px;top: 0;}
+div.flex>div.query>input{text-align: left; width: 200px;padding:10px;box-sizing: border-box;color:#666;border-radius: 5px;border:1px solid #dedede; margin:5px;position: relative;top:0;}
+.query>button{width: 60px;border-radius: 5px;color:#fff;position: relative;top: 0; }
+@media screen and (max-width:1400px) {
+	div.query{right: 0;}
+}
+/*transition*/
+.fade-enter-active,.fade-leave-active {transition: all .5s ease-in-out;}
+.fade-enter,.fade-leave-active{opacity: 0;transform: translateY(-10px);}
+.thead{position: absolute;left: 10px;top: 10px;right: 10px;}
+.thead > table{width: 100%;overflow:hidden;}
+.thead tr {width :100%; height:36px; overflow: hidden;}
+.thead th{border-top:1px solid #ccc;background: #e9e9e9;}
+.thead > table >thead > tr > th:nth-child(1){border-left:1px solid #ccc; }
+.thead > table > tbody > tr > td:nth-child(1){border-left:1px solid #ccc;}
+.thead th,.thead td{border-bottom:1px solid #ccc;border-right:1px solid #ccc; font-size: 14px;height: 12px;line-height: 35px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;/*display: inline-block;*/text-align: center;}
+.thead td{ margin-top:-7px;}
+.thead  > table > tbody > tr:nth-child(odd) > td{background: #fff;}
+.thead  > table > tbody > tr:nth-child(even) > td{background: #fafafa;}
+/*下拉框*/
+.calendar-dropdown{background: #fff;position: absolute;padding:20px;border: 1px solid #eee;border-radius: 2px;z-index: 999999;}
+.calendar-dropdown:before {position: absolute;left:30px;top: -10px;content: "";border:5px solid rgba(0, 0, 0, 0);border-bottom-color: #DEDEDE;}
+.calendar-dropdown:after {position: absolute;left:30px;top: -9px;content: "";border:5px solid rgba(0, 0, 0, 0);border-bottom-color: #fff;}
+/*弹出框*/
+.calendar-dialog{position: absolute;left:0;top:0;right:0;bottom:0;}
+.calendar-dialog-mask{background:rgba(255,255,255,.5);width:100%;height:100%;}
+.calendar-dialog-body{background: #fff;position: absolute;left:50%;top:50%;transform: translate(-50%,-50%);padding:20px;border: 1px solid #eee;border-radius: 2px;}
+#tableResult{box-sizing: border-box;-webkit-box-pack: start;-webkit-box-align: start;-webkit-justify-content: space-between;-webkit-align-items: top;justify-content: space-between;align-items: top;flex-flow:row wrap; top:-100px;transition: top 0.5s;width: 100%;border-bottom: 1px solid #c3c3c3;box-shadow: 0 1px 0 #fff;-webkit-box-shadow: 0 1px 0 #fff;}
+/* 暂无数据 */
+.b_text{height: 50px;line-height: 50px;font-size: 16px;text-align: center;}
+.Back{font-size: 14px;height: 40px;line-height: 40px;text-align: center;}
+.Back a{display: inline-block;width: 100px;border: 1px solid #ccc;height: 30px;line-height: 30px;border-radius: 5px;background: rgba(91,192,222,.8);color: #fff;}
+.Btn_Box button{padding: 5px 10px;color:#fff;border-radius: 4px;border-radius: 4px;}
+#_Conut .blances{color:red;background: #fdf8e4;}
+.red{color:red;}
+.T_Boder{border-bottom: 1px solid #ccc;border-right: 1px solid #ccc;} 
+.X_ma{background-color: rgba(119,119,119,.8); width: 55px;text-align: center; display:inline-block;box-sizing: border-box;padding: 5px;border-radius: 15px;color: #fff;margin: 0 5px;padding:5px 5px 5px 10px;height: 25px;line-height: 16px;}
+.ZC{background-color:rgba(91,192,222,.8);}

@@ -23,10 +23,17 @@ export default {
 					case "HeartBeat":
 						commit('upHeart',0);//收到心跳包则重置心跳
 						//dispatch('reset',null,{ root: true });
+						break;
+					case "GoOut":
+						debugger;
+						console.log(rootState.loginStore.G_name);
+						commit("loginStore/upName","");
+						commit("loginStore/upPass","");
+						this.$router.push('/');
 						break;		
 				}
 			}//状态码判断结束	
 
-		}
+		}//analyzeData The End
 	},
 }

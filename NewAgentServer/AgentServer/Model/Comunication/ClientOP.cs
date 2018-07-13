@@ -25,13 +25,17 @@ namespace Model.Comunication
         /// </summary>
         public string Port { get; set; }
         /// <summary>
-        /// 连接时间
+        /// socket连接成功
         /// </summary>
         public DateTime ConTime { get; set; }
         /// <summary>
         /// 连接用户
         /// </summary>
         public string LogName { get; set; }
+        /// <summary>
+        /// 登录令牌
+        /// </summary>
+        public string Token { get; set; }
         /// <summary>
         /// 连接socket对象
         /// </summary>
