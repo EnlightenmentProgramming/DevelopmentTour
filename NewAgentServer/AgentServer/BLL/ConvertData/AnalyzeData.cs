@@ -14,7 +14,9 @@ namespace BLL.ConvertData
     {
         #region 成员变量
         LogicBLL.LoginBLL loginBll = new LogicBLL.LoginBLL();
-        AgentListBLL aListBll = new AgentListBLL(); 
+        AgentListBLL aListBll = new AgentListBLL();
+        ClientListBLL clntListBll = new ClientListBLL();
+        AgentSubBLL aSubBll = new AgentSubBLL();
         #endregion
         /// <summary>
         /// 初步处理接收到的报文
@@ -142,7 +144,9 @@ namespace BLL.ConvertData
                                 }
                                 break;
                             case "GetAgentLogName"://获取代理登录名称
-                                if(isLoginAuth)
+                            case "GetClientLogName"://获取会员登录名称
+                            case "GetSubLogName"://获取子账号登录名称
+                                if (isLoginAuth)
                                 {
                                     isGoupRetMsg = false;
                                     methodReturn = aListBll.GetALoginID(head);
@@ -150,7 +154,42 @@ namespace BLL.ConvertData
                                 break;
                             #endregion
                             #region 会员列表部分
-
+                            case "GetClntList_Invite"://获取会员列表数据
+                            case "GetDeletedC"://获取逻辑删除的会员
+                                if (hasRequestParameters && isLoginAuth)
+                                {
+                                    isGoupRetMsg = false;
+                                    methodReturn = clntListBll.GetClntList(reqMsg.RequestParams, head);
+                                }
+                                break;
+                            case "GetClntOdds"://获取会员标准赔率
+                               if(isLoginAuth)
+                                {
+                                    isGoupRetMsg = false;
+                                    methodReturn = clntListBll.GetClntOdds(head);
+                                }
+                                break;
+                            case "InsertClient"://新增会员
+                            case "AllClientZero"://直属会员清零
+                            case "ClientZero"://会员清零
+                            case "ClearCard4Clnt"://会员清卡
+                            case "UpdateClient"://修改会员
+                            case "ClientModifyPwd"://修改会员密码
+                            case "ClientPoint"://会员上下分
+                                if (hasRequestParameters && isLoginAuth)
+                                {
+                                    isGoupRetMsg = false;
+                                    methodReturn = clntListBll.ClntOperates(reqMsg.RequestParams, head);
+                                }
+                                break;
+                            #endregion
+                            #region 子账号部分
+                            case "GetAgentSubs"://获取指定代理下子账号列表数据
+                                aSubBll.GetAgentSubs(reqMsg.RequestParams, head);
+                                break;
+                            case "InsertAgentSub"://新增子账号
+                                aSubBll.ASubOperates(reqMsg.RequestParams, head);
+                                break;
                             #endregion
                             default:
                                 error.ErrNo = "0005";

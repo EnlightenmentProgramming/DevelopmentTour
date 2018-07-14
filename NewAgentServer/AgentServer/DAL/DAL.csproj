@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dos.Common">
+      <HintPath>..\lib\Dos.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Dos.ORM">
       <HintPath>..\lib\Dos.ORM.dll</HintPath>
     </Reference>
@@ -51,6 +54,8 @@
   <ItemGroup>
     <Compile Include="CommonDAL.cs" />
     <Compile Include="ConfigDAL\T_ConfigDAL.cs" />
+    <Compile Include="LogicDAL\AgentListDAL.cs" />
+    <Compile Include="LogicDAL\ClientListDAL.cs" />
     <Compile Include="LogicDAL\LoginDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

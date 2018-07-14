@@ -280,5 +280,23 @@ namespace DAL
                 throw;
             }
         }
+        /// <summary>
+        /// 判断指定会员是否是H5会员
+        /// </summary>
+        /// <param name="clntID"></param>
+        /// <returns></returns>
+        public static bool IsH5Clnt(string clntID)
+        {
+            try
+            {
+                return Db.Context_SqlServer.FromSql("Select Count(*) from T_WeiTou_Detail where ClientID ='" + clntID + "'").ToScalar<int>() > 0;
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
     }
 }
+

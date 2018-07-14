@@ -23,6 +23,7 @@ namespace BLL.LogicBLL
         public string LoginLogic(string requestMsg, HeadMessage head, ClientOP client)
         {
             sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
             try
             {
                 sendHead.Token = Guid.NewGuid().ToString().Replace("-", "");
@@ -97,7 +98,6 @@ namespace BLL.LogicBLL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Reponse = "{}";
@@ -112,6 +112,7 @@ namespace BLL.LogicBLL
         public string GetPubInfo(HeadMessage head)
         {
             sendHead.Method = head.Method;
+            error.ErrNo = "0004";
             try
             {
                 string pubInfo = loginDal.GetPubInfo(out error);
@@ -123,7 +124,6 @@ namespace BLL.LogicBLL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Reponse = "{}";

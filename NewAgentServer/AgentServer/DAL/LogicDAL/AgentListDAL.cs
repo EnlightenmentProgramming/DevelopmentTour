@@ -136,6 +136,7 @@ namespace DAL.LogicDAL
                 AgentPermission aPerm = new AgentPermission();
                 dbAgent.AgentID = Guid.NewGuid().ToString().Replace("-", "");
                 dbAgent.AgentName = model.A_Name;
+                dbAgent.Principal = 0;
                 dbAgent.LogName = model.A_UserID;
                 dbAgent.ParentID = model.A_PID;
                 dbAgent.Pwd = model.A_Pwd;
@@ -216,26 +217,43 @@ namespace DAL.LogicDAL
             }
         }
         /// <summary>
-        /// 随机生成6位登录名，然后判断是否存在，不存在则可以使用
+        /// 随机生成length位登录名，然后判断是否存在，不存在则可以使用
         /// </summary>
         /// <returns></returns>
-        public string GetLoginID(out ErrorMessage error)
+        public string GetLoginID(int length,out ErrorMessage error)
         {
             error = new ErrorMessage();
             try
             {
+                length = length < 0 ? 0 : length;
                 do
                 {
                     string _logname = string.Empty;
                     Random ra = new Random(unchecked((int)DateTime.Now.Ticks));
                     int tmp = 0;
-                    for (int i = 0; i <= 6 - 1; i++)
+                    for (int i = 0; i <= length - 1; i++)
                     {
                         tmp = ra.Next(0, 9); //随机取数
                         Thread.Sleep(100);
                         _logname = _logname.Trim() + tmp.ToString();
                     }
-                    if (!AgentListDAL.Any(a => a.LogName == _logname))
+                    bool isRepeat = true;
+                    switch(length)
+                    {
+                        case 5:
+                            isRepeat = AgentSubDAL.Any(a => a.LogName == _logname); 
+                            break;
+                        case 6:
+                            isRepeat = AgentListDAL.Any(a => a.LogName == _logname);
+                            break;
+                        case 8:
+                            isRepeat = ClientListDAL.Any(a => a.LogName == _logname);
+                            break;
+                        default:
+                            isRepeat = false;
+                            break;
+                    }
+                    if (!isRepeat)
                     {
                         error.ErrMsg = "生成代理登录名称成功";
                         error.ErrNo = "0000";
@@ -278,13 +296,7 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "必须传递需要修改代理的ID";
                     error.ErrNo = "0004";
                     return res;
-                }
-                if (string.IsNullOrEmpty(model.A_UserID))
-                {
-                    error.ErrMsg = "必须传递需要修改代理的的登录名称";
-                    error.ErrNo = "0004";
-                    return res;
-                }
+                }               
                 sqlString = sqlString.Replace("${AgentID}", model.A_ID);
                 sqlString = sqlString.Replace("${LogName}", model.A_UserID);
                 string isUpClntOdds = "0";//是否需要将当前代理链上的所有会员恢复为标准赔率（只有当前取消当前代理抽水权限时需要做此操作）
@@ -294,7 +306,11 @@ namespace DAL.LogicDAL
                 StringBuilder upBuilder = new StringBuilder();
                 #region 组装修改代理信息Sql
                 upBuilder.Append("UPDATE T_Agent set ");
-                upBuilder.Append("LogName = '" + model.A_UserID + "' ");
+                upBuilder.Append("AgentID = '" + model.A_ID + "' ");
+                if(!string.IsNullOrEmpty(model.A_UserID))
+                {
+                    upBuilder.Append(",LogName = '" + model.A_UserID + "' ");
+                }
                 #region 代理抽水或配分权限修改处理
                 AgentPermission tempPerm = new AgentPermission();
                 AgentPermission newPerm = new AgentPermission();
@@ -404,6 +420,7 @@ namespace DAL.LogicDAL
                     upBuilder.Append(",DrawRate = " + model.A_DrawR);
                     logDesc.Append("把代理" + model.A_UserID + "的和局率改为了" + model.A_DrawR + "；");
                 }
+                upBuilder.Append(" where AgentID ='"+model.A_ID+"'");
                 #endregion
 
                 #region 组装修改代理限红sql
@@ -675,7 +692,7 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "服务端没有读取到deletedAgent数据模板，请联系管理员";
                     return null;
                 }
-                strSql = strSql.Replace("${curePage}", model.A_ID);
+                strSql = strSql.Replace("${AgentID}", model.A_ID);
                 List<AgentSearchModel> aList = new List<AgentSearchModel>();
                 string messge;
                 aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out messge);                
@@ -748,7 +765,8 @@ namespace DAL.LogicDAL
                 cClearStr = cClearStr.Replace("${CreateID}", head.LoginID);
                 cClearStr = cClearStr.Replace("${AgentID}", aid);
                 cClearStr = cClearStr.Replace("${IP}", head.Ip);
-                Db.Context_SqlServer.FromSql(cClearStr).ToDataSet();
+                cClearStr = cClearStr.Replace("${Address}", Common.CommonHelper.ipToAddr(head.Ip));
+                Db.Context_SqlServer.FromSql(cClearStr).ToDataSet();//直属会员清零
                 decimal princple = Db.Context_SqlServer.FromSql("select Principal from T_Agent where AgentID ='" + aid + "'").ToScalar<decimal>();
                 string aPointStr = SqlTemplateCommon.GetSql("A_SaveAgentPoint");
                 if (string.IsNullOrEmpty(aPointStr))
@@ -767,7 +785,7 @@ namespace DAL.LogicDAL
                 aPointStr = aPointStr.Replace("${IsAClear}", "1");
                 if (princple > 0)
                 {
-                    Db.Context_SqlServer.FromSql(aPointStr).ToDataTable();
+                    Db.Context_SqlServer.FromSql(aPointStr).ToDataTable();//代理清零
                 }
                 return true;
             }

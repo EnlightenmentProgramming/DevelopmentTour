@@ -24,6 +24,7 @@ namespace DAL.LogicDAL
         public string Login(AgentSearchModel model, HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null)
@@ -35,7 +36,6 @@ namespace DAL.LogicDAL
                 string loginSql = SqlTemplateCommon.GetSql("A_AgentLogin");
                 if (string.IsNullOrEmpty(loginSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到A_AgentLogin数据模板，请联系管理员";
                     return null;
                 }
@@ -73,7 +73,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg ="代理登录异常：" + ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -87,6 +86,7 @@ namespace DAL.LogicDAL
         public string GetATodayBillCount(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID))
@@ -98,7 +98,6 @@ namespace DAL.LogicDAL
                 string strSql = SqlTemplateCommon.GetSql("A_GetAgentBetData_Current_New");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到A_GetAgentBetData_Current_New数据模板，请联系管理员";
                     return null;
                 }
@@ -108,7 +107,6 @@ namespace DAL.LogicDAL
                 if(aList == null || aList.Count <=0)
                 {
                     error.ErrMsg = _msg;
-                    error.ErrNo = "0004";
                     return null;
                 }
                 strSql = strSql.Replace("${AgentID}", model.A_ID);
@@ -119,7 +117,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg ="获取代理今日下单统计异常："+ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -134,6 +131,7 @@ namespace DAL.LogicDAL
         public string GetOnlineClntList(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID))
@@ -145,7 +143,6 @@ namespace DAL.LogicDAL
                 string strSql = SqlTemplateCommon.GetSql("A_GetClientUseInfo");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到A_GetClientUseInfo数据模板，请联系管理员";
                     return null;
                 }
@@ -153,7 +150,6 @@ namespace DAL.LogicDAL
                 List<AgentSearchModel> aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out _msg);
                 if (aList == null || aList.Count <= 0)
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = _msg;
                     return null;
                 }
@@ -165,7 +161,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = "获取代理今日下单统计异常：" + ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -180,6 +175,7 @@ namespace DAL.LogicDAL
         public string GetACountByDate(AgentSearchModel model, HeadMessage head, out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID))
@@ -191,7 +187,6 @@ namespace DAL.LogicDAL
                 string strSql = SqlTemplateCommon.GetSql("LoginACount");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到LoginACount数据模板，请联系管理员";
                     return null;
                 }
@@ -199,7 +194,6 @@ namespace DAL.LogicDAL
                 List<AgentSearchModel> aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out _msg);
                 if (aList == null || aList.Count <= 0)
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = _msg;
                     return null;
                 }
@@ -221,7 +215,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -236,6 +229,7 @@ namespace DAL.LogicDAL
         public string GetAClntCount(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID))
@@ -247,7 +241,6 @@ namespace DAL.LogicDAL
                 string strSql = SqlTemplateCommon.GetSql("A_AgentClientCount");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到A_AgentClientCount数据模板，请联系管理员";
                     return null;
                 }
@@ -255,7 +248,6 @@ namespace DAL.LogicDAL
                 List<AgentSearchModel> aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out _msg);
                 if (aList == null || aList.Count <= 0)
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = _msg;
                     return null;
                 }
@@ -277,7 +269,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -292,6 +283,7 @@ namespace DAL.LogicDAL
         public string GetAorCAgentData(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID))
@@ -303,7 +295,6 @@ namespace DAL.LogicDAL
                 string strSql = SqlTemplateCommon.GetSql("AgentData_New");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到AgentData_New数据模板，请联系管理员";
                     return null;
                 }
@@ -332,7 +323,6 @@ namespace DAL.LogicDAL
                 }
                 if (aList == null || aList.Count <= 0)
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = _msg;
                     return null;
                 }
@@ -343,7 +333,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 return null;
             }
@@ -355,6 +344,7 @@ namespace DAL.LogicDAL
         public string GetPubInfo(out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             string info = "";
             string sql = "select  * from T_PubInfo where IsPublish='YES' and InfoType='AGENT' order by CreateTime desc";
             //List<Models.Log.T_PubInfo> pubInfos = db.GetList<Models.Log.T_PubInfo>(sql);
@@ -376,7 +366,6 @@ namespace DAL.LogicDAL
             {
                 LogHelper.WriteLog(typeof(LoginDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r","").Replace("\n","");
-                error.ErrNo = "0000";
                 return "";
             }
         }

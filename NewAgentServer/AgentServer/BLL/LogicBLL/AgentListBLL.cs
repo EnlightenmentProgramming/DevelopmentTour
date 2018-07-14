@@ -28,6 +28,7 @@ namespace BLL.LogicBLL
         public string GetALists(string requestMsg, HeadMessage head)
         {
             sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
             try
             {
                 AgentSearchModel aSearch = JSON.ToObject<AgentSearchModel>(requestMsg);
@@ -39,7 +40,7 @@ namespace BLL.LogicBLL
                 }
                 if (aSearch == null)
                 {
-                    error.ErrMsg = "没有接收到登录账号或密码";
+                    error.ErrMsg = "请求参数不完整";
                     error.ErrNo = "0003";
                 }
                 else
@@ -65,7 +66,6 @@ namespace BLL.LogicBLL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Reponse = "{}";
@@ -82,6 +82,7 @@ namespace BLL.LogicBLL
         public string InsertAgent(string requestMsg,HeadMessage head)
         {
             sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
             try
             {
                 AgentSearchModel aSearch = JSON.ToObject<AgentSearchModel>(requestMsg);
@@ -91,17 +92,14 @@ namespace BLL.LogicBLL
                 {
                     head.LoginID = pId;
                     error.ErrMsg = "子账号不具有此权限";
-                    error.ErrNo = "0004";
                 }
                 else if(!CommonDAL.IsYes(head.LoginID))
                 {
                     error.ErrMsg = "当前代理未启用，不具有此权限";
-                    error.ErrNo = "0004";
                 }
                 else if(aSearch == null)
                 {
                     error.ErrMsg = "没有接收到正确的参数";
-                    error.ErrNo = "0003";
                 }
                 else
                 {
@@ -138,7 +136,6 @@ namespace BLL.LogicBLL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Reponse = "{}";
@@ -154,10 +151,23 @@ namespace BLL.LogicBLL
         /// <returns></returns>
         public string GetALoginID(HeadMessage head)
         {
+            sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
             try
             {
-                sendHead.Method = head.Method;
-                string userId = agentListDal.GetLoginID(out error);
+                string userId = "";
+                switch (sendHead.Method)
+                {
+                    case "GetAgentLogName":
+                        userId = agentListDal.GetLoginID(6,out error);
+                        break;
+                    case "GetClientLogName":
+                        userId = agentListDal.GetLoginID(8, out error);
+                        break;
+                    case "GetSubLogName":
+                        userId = agentListDal.GetLoginID(5, out error);
+                        break;
+                }                
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Error = JSON.ToJSON(error);
                 sendMsg.Reponse = JSON.ToJSON(new { JsonData = JSON.ToJSON(new { UserID = userId }) });
@@ -166,7 +176,6 @@ namespace BLL.LogicBLL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Reponse = "{}";
