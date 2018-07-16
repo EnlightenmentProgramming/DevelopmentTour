@@ -17,6 +17,7 @@ namespace BLL.ConvertData
         AgentListBLL aListBll = new AgentListBLL();
         ClientListBLL clntListBll = new ClientListBLL();
         AgentSubBLL aSubBll = new AgentSubBLL();
+        StatisticsBLL sBll = new StatisticsBLL();
         #endregion
         /// <summary>
         /// 初步处理接收到的报文
@@ -188,7 +189,30 @@ namespace BLL.ConvertData
                                 aSubBll.GetAgentSubs(reqMsg.RequestParams, head);
                                 break;
                             case "InsertAgentSub"://新增子账号
+                            case "UpdateAgentSub"://修改子账号
+                            case "UpdateSubState"://修改子账号状态
+                            case "DeleteAgentSub"://删除子账号
                                 aSubBll.ASubOperates(reqMsg.RequestParams, head);
+                                break;
+                            #endregion
+                            #region 获取报表数据部分
+                            case "GetAStatistics"://获取代理统计数据
+                            case "GetADayStatistics"://获取代理每日统计数据
+                            case "GetClntStatistics"://获取会员统计
+                            case "GetClntDayStatistics"://获取会员每日统计数据
+                            case "GetClntBetBills"://获取会员下注明细
+                            case "GetPointDetail"://获取上下分明细  
+                            case "GetTableResult"://获取游戏结果数据
+                            case "PromotionA_Clnt4A"://获取指定代理下的会员推广统计数据 增量
+                            case "PromotionA_AllClnt4A"://获取指定代理下的会员推广统计数据 存量
+                            case "H5ClntPointDetail"://H5会员第三方上分明细
+                            case "H5ClntPointSum_A"://获取指定代理下所有H5会员第三方上分明细
+                            case "RedEnvelopeSum"://查询指定代理自己及直属代理及直属会员下红包发放合计
+                            case "RedEnvelopeDetail"://查询指定会员下红包发送明细
+                                if (hasRequestParameters && isLoginAuth)
+                                {
+                                    methodReturn = sBll.GetStatisticsData(reqMsg.RequestParams, head);
+                                }
                                 break;
                             #endregion
                             default:

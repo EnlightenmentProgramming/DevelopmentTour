@@ -20,5 +20,10 @@ namespace Model.LogicModel
         public int T_MN_XD { get; set; }
         public int T_MX_ZD { get; set; }
         public int T_MN_ZD { get; set; }
+        public string T_GameT { get; set; }
+        /// <summary>
+        /// 局数
+        /// </summary>
+        public string T_Ju { get; set; }
     }
 }

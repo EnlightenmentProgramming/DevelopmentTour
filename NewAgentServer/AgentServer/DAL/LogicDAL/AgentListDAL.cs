@@ -29,13 +29,13 @@ namespace DAL.LogicDAL
         public string GetALists(AgentSearchModel model, HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 string pageStr = SqlTemplateCommon.GetSql("W_GetAllAgentsDataPage_New");
                 string countStr = SqlTemplateCommon.GetSql("W_GetAListCount_New");
                 if (string.IsNullOrEmpty(countStr) || string.IsNullOrEmpty(pageStr))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到W_GetAllAgentsDataPage_New/W_GetAListCount_New数据模板，请联系管理员";
                     return null;
                 }
@@ -64,7 +64,6 @@ namespace DAL.LogicDAL
                 if (aList == null || aList.Count <= 0)
                 {
                     error.ErrMsg = messge;
-                    error.ErrNo = "0004";
                     return null;
                 }
                 pageStr = pageStr.Replace("${WhereSql}", whereSql);
@@ -82,7 +81,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return null;
             }
         }
@@ -96,6 +94,7 @@ namespace DAL.LogicDAL
         public bool InsertAgent(AgentSearchModel model, HeadMessage head, out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             bool res = false;
             try
             {
@@ -103,31 +102,26 @@ namespace DAL.LogicDAL
                 if (model == null)
                 {
                     error.ErrMsg = "参数不完整";
-                    error.ErrNo = "0003";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_UserID))
                 {
                     error.ErrMsg = "必须填写登录名称";
-                    error.ErrNo = "0003";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_PID))
                 {
                     error.ErrMsg = "必须填写所属代理ID";
-                    error.ErrNo = "0003";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_Pwd))
                 {
                     error.ErrMsg = "必须填写代理登录密码";
-                    error.ErrNo = "0003";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_Name))
                 {
                     error.ErrMsg = "必须填写代理名称";
-                    error.ErrNo = "0003";
                     return false;
                 } 
                 #endregion
@@ -161,13 +155,13 @@ namespace DAL.LogicDAL
                     dbAgent.Min_X = model.A_MN_Z;
                     dbAgent.Min_H = model.A_MN_Z;
                 }
-                if (model.A_Mx_Z != null)
+                if (model.A_MX_Z != null)
                 {
-                    dbAgent.Max_ZD = model.A_Mx_Z / 10;
-                    dbAgent.Max_Z = model.A_Mx_Z;
-                    dbAgent.Max_XD = model.A_Mx_Z / 10;
-                    dbAgent.Max_X = model.A_Mx_Z;
-                    dbAgent.Max_H = model.A_Mx_Z / 10;
+                    dbAgent.Max_ZD = model.A_MX_Z / 10;
+                    dbAgent.Max_Z = model.A_MX_Z;
+                    dbAgent.Max_XD = model.A_MX_Z / 10;
+                    dbAgent.Max_X = model.A_MX_Z;
+                    dbAgent.Max_H = model.A_MX_Z / 10;
                 }
                 if (model.A_WashR != null)
                 {
@@ -189,7 +183,6 @@ namespace DAL.LogicDAL
                 }
                 else
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "新增代理失败，请重试";
                     res = false;
                 } 
@@ -211,7 +204,6 @@ namespace DAL.LogicDAL
             catch (Exception ex)
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
-                error.ErrNo = "0004";
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
                 return false;
             }
@@ -281,6 +273,7 @@ namespace DAL.LogicDAL
         public bool UpdateAgent(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 bool res = false;
@@ -288,13 +281,11 @@ namespace DAL.LogicDAL
                 if (string.IsNullOrEmpty(sqlString))
                 {
                     error.ErrMsg = "服务端没有读取到A_UpdateT_Agent数据模板，请联系管理员";
-                    error.ErrNo = "0004";
                     return res;
                 }
                 if (string.IsNullOrEmpty(model.A_ID))
                 {
                     error.ErrMsg = "必须传递需要修改代理的ID";
-                    error.ErrNo = "0004";
                     return res;
                 }               
                 sqlString = sqlString.Replace("${AgentID}", model.A_ID);
@@ -378,14 +369,14 @@ namespace DAL.LogicDAL
                 {
                     upBuilder.Append(",AgentName = '" + model.A_Name + "' ");
                 }
-                if (model.A_Mx_Z != null)
+                if (model.A_MX_Z != null)
                 {
-                    upBuilder.Append(", Max_Z = " + model.A_Mx_Z);
-                    upBuilder.Append(" ,Max_X = " + model.A_Mx_Z);
-                    upBuilder.Append(" ,Max_H = " + model.A_Mx_Z / 10);
-                    upBuilder.Append(" ,Max_XD = " + model.A_Mx_Z / 10);
-                    upBuilder.Append(" ,Max_ZD = " + model.A_Mx_Z / 10);
-                    logDesc.Append("把代理" + model.A_UserID + "的最大限红改为了" + model.A_Mx_Z + "；");
+                    upBuilder.Append(", Max_Z = " + model.A_MX_Z);
+                    upBuilder.Append(" ,Max_X = " + model.A_MX_Z);
+                    upBuilder.Append(" ,Max_H = " + model.A_MX_Z / 10);
+                    upBuilder.Append(" ,Max_XD = " + model.A_MX_Z / 10);
+                    upBuilder.Append(" ,Max_ZD = " + model.A_MX_Z / 10);
+                    logDesc.Append("把代理" + model.A_UserID + "的最大限红改为了" + model.A_MX_Z + "；");
                 }
                 if (model.A_MN_Z != null)
                 {
@@ -426,13 +417,13 @@ namespace DAL.LogicDAL
                 #region 组装修改代理限红sql
                 StringBuilder authBuilder = new StringBuilder();
                 authBuilder.Append("update T_Authority set Priority = 'A'");
-                if (model.A_Mx_Z != null)//如果修改了配分权限则不修改限红
+                if (model.A_MX_Z != null)//如果修改了配分权限则不修改限红
                 {
-                    authBuilder.Append(",Max_Z = " + model.A_Mx_Z);
-                    authBuilder.Append(",Max_X = " + model.A_Mx_Z);
-                    authBuilder.Append(",Max_H = " + model.A_Mx_Z / 10);
-                    authBuilder.Append(",Max_XD = " + model.A_Mx_Z / 10);
-                    authBuilder.Append(",Max_ZD = " + model.A_Mx_Z / 10);
+                    authBuilder.Append(",Max_Z = " + model.A_MX_Z);
+                    authBuilder.Append(",Max_X = " + model.A_MX_Z);
+                    authBuilder.Append(",Max_H = " + model.A_MX_Z / 10);
+                    authBuilder.Append(",Max_XD = " + model.A_MX_Z / 10);
+                    authBuilder.Append(",Max_ZD = " + model.A_MX_Z / 10);
                 }
                 if (model.A_MN_Z != null)//如果修改了配分权限则不修改限红
                 {
@@ -470,7 +461,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return false;
             }
         }
@@ -482,37 +472,43 @@ namespace DAL.LogicDAL
         private bool isUpMatchp(string aId ,out ErrorMessage error)
         {
             error = new ErrorMessage();
-            string strSql = SqlTemplateCommon.GetSql("UpMatchpCount4A");
-            if(string.IsNullOrEmpty(strSql))
+            error.ErrNo = "0004";
+            try
             {
-                error.ErrMsg = "服务端没有读取到UpMatchpCount4A数据模板，请联系管理员";
-                error.ErrNo = "0004";
-                return false;
+                string strSql = SqlTemplateCommon.GetSql("UpMatchpCount4A");
+                if (string.IsNullOrEmpty(strSql))
+                {
+                    error.ErrMsg = "服务端没有读取到UpMatchpCount4A数据模板，请联系管理员";
+                    error.ErrNo = "0004";
+                    return false;
+                }
+                strSql = strSql.Replace("${AgentID}", aId);
+                AgentReport aReport = Db.Context_SqlServer.FromSql(strSql).ToFirst<AgentReport>();
+                if (aReport != null)
+                {
+                    if (aReport.A_ChouS > 0)
+                    {
+                        error.ErrMsg = "修改配分权限之前请先结算抽水";
+                        return false;
+                    }
+                    if (aReport.A_WashFee > 0)
+                    {
+                        error.ErrMsg = "修改配分权限之前请先结算洗码费";
+                        return false;
+                    }
+                    if (aReport.A_GroupPrinc > 0)
+                    {
+                        error.ErrMsg = "修改配分权限之前请先清零此代理";
+                        return false;
+                    }
+                }
+                return true;
             }
-            strSql = strSql.Replace("${AgentID}", aId);
-            AgentReport aReport = Db.Context_SqlServer.FromSql(strSql).ToFirst<AgentReport>();
-            if(aReport != null)
+            catch (Exception ex)
             {
-                if(aReport.A_ChouS >0)
-                {
-                    error.ErrMsg = "修改配分权限之前请先结算抽水";
-                    error.ErrNo = "0004";
-                    return false;
-                }
-                if(aReport.A_WashFee >0)
-                {
-                    error.ErrMsg = "修改配分权限之前请先结算洗码费";
-                    error.ErrNo = "0004";
-                    return false;
-                }
-                if (aReport.A_GroupPrinc > 0)
-                {
-                    error.ErrMsg = "修改配分权限之前请先清零此代理";
-                    error.ErrNo = "0004";
-                    return false;
-                }
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
+                throw;
             }
-            return true;
 
         }
         /// <summary>
@@ -525,19 +521,18 @@ namespace DAL.LogicDAL
         public bool UpdateAPwd(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 string strSql = SqlTemplateCommon.GetSql("A_SaveAgentModifyPassword");
                 if (string.IsNullOrEmpty(strSql))
                 {
                     error.ErrMsg = "服务端没有读取到A_SaveAgentModifyPassword数据模板，请联系管理员";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_ID))
                 {
                     error.ErrMsg = "必须传入要修改代理的ID";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 strSql = strSql.Replace("${AgentID}", model.A_ID);
@@ -561,7 +556,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return false;
             }
         }
@@ -575,19 +569,18 @@ namespace DAL.LogicDAL
         public bool UpdateLoginAPwd(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 string strSql = SqlTemplateCommon.GetSql("A_AgentSelfModifyPassword");
                 if (string.IsNullOrEmpty(strSql))
                 {
                     error.ErrMsg = "服务端没有读取到A_AgentSelfModifyPassword数据模板，请联系管理员";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 if (string.IsNullOrEmpty(model.A_ID))
                 {
                     error.ErrMsg = "必须传入要修改代理的ID";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 strSql = strSql.Replace("${AgentID}", model.A_ID);
@@ -612,7 +605,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return false;
             }
         }
@@ -626,25 +618,23 @@ namespace DAL.LogicDAL
         public bool AgentPoint(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (string.IsNullOrEmpty(model.A_ID) || model.A_IsAdd == null || model.A_Point == null || string.IsNullOrEmpty(head.LoginID) || string.IsNullOrEmpty(model.A_PID))
                 {
                     error.ErrMsg = "参数不完整";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 if (model.A_Point <= 0)
                 {
                     error.ErrMsg = "上下分不在正确范围";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 string strSql = SqlTemplateCommon.GetSql("A_SaveAgentPoint");
                 if (string.IsNullOrEmpty(strSql))
                 {
                     error.ErrMsg = "服务端没有读取到A_SaveAgentPoint数据模板，请联系管理员";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 strSql = strSql.Replace("${AgentID}", model.A_ID);//上下分对象代理ID
@@ -667,7 +657,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return false;
             }
 
@@ -683,12 +672,12 @@ namespace DAL.LogicDAL
         public string GetDeletedA(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 string strSql = SqlTemplateCommon.GetSql("deletedAgent");
                 if (string.IsNullOrEmpty(strSql))
                 {
-                    error.ErrNo = "0004";
                     error.ErrMsg = "服务端没有读取到deletedAgent数据模板，请联系管理员";
                     return null;
                 }
@@ -699,7 +688,6 @@ namespace DAL.LogicDAL
                 if (aList == null || aList.Count <= 0)
                 {
                     error.ErrMsg = messge;
-                    error.ErrNo = "0004";
                     return null;
                 }              
                 error.ErrNo = "0000";
@@ -713,7 +701,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return null;
             }
         }
@@ -805,12 +792,12 @@ namespace DAL.LogicDAL
         public bool ClearAgent(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID) || string.IsNullOrEmpty(model.A_PID))
                 {
                     error.ErrMsg = "清零参数不完整";
-                    error.ErrNo = "0004";
                     return false;
                 }
                 if (ClearAgent(head, model.A_ID, model.A_PID))
@@ -822,7 +809,6 @@ namespace DAL.LogicDAL
                 else
                 {
                     error.ErrMsg = "代理清零失败";
-                    error.ErrNo = "0004";
                     return true;
                 }
             }
@@ -830,7 +816,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return false;
             }
         }
@@ -868,6 +853,7 @@ namespace DAL.LogicDAL
             }
             catch (Exception ex)
             {
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 throw;
             }
         }
@@ -927,6 +913,7 @@ namespace DAL.LogicDAL
             }
             catch (Exception ex)
             {
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 throw;
             }
         }
@@ -951,6 +938,7 @@ namespace DAL.LogicDAL
             }
             catch (Exception ex)
             {
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 throw;
             }
 
@@ -968,57 +956,64 @@ namespace DAL.LogicDAL
             {
                 return true;
             }
-            List<AgentPermission> aList = new List<AgentPermission>();
-            string strSql = "select AgentID A_ID,ParentID A_PID ,AgentName A_Name, LogName A_UserID ,[dbo].[Base64Decode](F_3) A_Perm from T_Agent where AgentID = '" + aID + "'";
-            AgentPermission firstAgent = Db.Context_SqlServer.FromSql(strSql).ToFirst<AgentPermission>();
-            if (firstAgent == null)
+            try
             {
-                return true;
-            }
-            if (firstAgent.A_PID == loginID)
-            {
-                return false;
-            }
-            if (!aList.Contains(firstAgent)) aList.Add(firstAgent);
-            string pID = firstAgent.A_PID;
-            AgentPermission secondAgent = new AgentPermission();
-            while (true)
-            {
-                if (firstAgent.A_ID == loginID)
-                {
-                    break;
-                }
-                string strPSql = "select AgentID A_ID,ParentID A_PID ,AgentName A_Name, LogName A_UserID ,[dbo].[Base64Decode](F_3) A_Perm from T_Agent where AgentID = '" + pID + "'";
-                secondAgent = Db.Context_SqlServer.FromSql(strPSql).ToFirst<AgentPermission>();
-                if (secondAgent == null)
+                List<AgentPermission> aList = new List<AgentPermission>();
+                string strSql = "select AgentID A_ID,ParentID A_PID ,AgentName A_Name, LogName A_UserID ,[dbo].[Base64Decode](F_3) A_Perm from T_Agent where AgentID = '" + aID + "'";
+                AgentPermission firstAgent = Db.Context_SqlServer.FromSql(strSql).ToFirst<AgentPermission>();
+                if (firstAgent == null)
                 {
                     return true;
                 }
-                if (secondAgent.A_ID == loginID)
+                if (firstAgent.A_PID == loginID)
                 {
-                    break;
+                    return false;
                 }
-                if (!aList.Contains(secondAgent))
+                if (!aList.Contains(firstAgent)) aList.Add(firstAgent);
+                string pID = firstAgent.A_PID;
+                AgentPermission secondAgent = new AgentPermission();
+                while (true)
                 {
-                    aList.Add(secondAgent);
+                    if (firstAgent.A_ID == loginID)
+                    {
+                        break;
+                    }
+                    string strPSql = "select AgentID A_ID,ParentID A_PID ,AgentName A_Name, LogName A_UserID ,[dbo].[Base64Decode](F_3) A_Perm from T_Agent where AgentID = '" + pID + "'";
+                    secondAgent = Db.Context_SqlServer.FromSql(strPSql).ToFirst<AgentPermission>();
+                    if (secondAgent == null)
+                    {
+                        return true;
+                    }
+                    if (secondAgent.A_ID == loginID)
+                    {
+                        break;
+                    }
+                    if (!aList.Contains(secondAgent))
+                    {
+                        aList.Add(secondAgent);
+                    }
+                    pID = secondAgent.A_PID;
                 }
-                pID = secondAgent.A_PID;
+                if (aList == null || aList.Count <= 0)
+                {
+                    return true;
+                }
+                bool flag = false;//标记是否有配分权限
+                AgentPermission setOdd = new AgentPermission();
+                for (int i = 0; i < aList.Count; i++)
+                {
+                    if (aList[i].A_Perm != null && aList[i].A_Perm.IndexOf("\"MatchPoint\":true") != -1)
+                    {
+                        flag = true;
+                        break;
+                    }
+                }
+                return flag;
             }
-            if (aList == null || aList.Count <= 0)
+            catch (Exception)
             {
-                return true;
+                throw;
             }
-            bool flag = false;//标记是否有配分权限
-            AgentPermission setOdd = new AgentPermission();
-            for (int i = 0; i < aList.Count; i++)
-            {
-                if(aList[i].A_Perm != null && aList[i].A_Perm.IndexOf("\"MatchPoint\":true") != -1)
-                {
-                    flag = true;
-                    break;
-                }
-            }
-            return flag;
         }
         /// <summary>
         /// 获取指定代理相关权限
@@ -1030,12 +1025,12 @@ namespace DAL.LogicDAL
         public string GetAPermission(AgentSearchModel model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.A_ID) || string.IsNullOrEmpty(head.LoginID))
                 {
                     error.ErrMsg = "请求参数不完整";
-                    error.ErrNo = "0004";
                     return null;
                 }
                 error.ErrMsg = "获取代理相关权限成功";
@@ -1053,7 +1048,6 @@ namespace DAL.LogicDAL
             {
                 Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
                 error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
-                error.ErrNo = "0004";
                 return null;
             }
         }

@@ -25,6 +25,7 @@ namespace DAL.LogicDAL
         public string GetCLists(ClientSearc model,HeadMessage head,out ErrorMessage error)
         {
             error = new ErrorMessage();
+            error.ErrNo = "0004";
             try
             {
                 string sqlStr = SqlTemplateCommon.GetSql("GetClntList_Invite");
@@ -32,7 +33,6 @@ namespace DAL.LogicDAL
                 if (string.IsNullOrEmpty(sqlStr) || string.IsNullOrEmpty(curStr))
                 {
                     error.ErrMsg = "服务端没有读取到GetClntList_Invite/CurrentClnt数据模板，请联系管理员";
-                    error.ErrNo = "0004";
                     return null;
                 }
                 sqlStr = sqlStr.Replace("${pageSize}", (model.PageSize ?? 20).ToString());
@@ -104,7 +104,6 @@ namespace DAL.LogicDAL
                 if (aList == null || aList.Count <= 0)
                 {
                     error.ErrMsg = msg;
-                    error.ErrNo = "0004";
                     return null;
                 }
                 error.ErrNo = "0000";
@@ -560,6 +559,9 @@ namespace DAL.LogicDAL
                 StringBuilder clntBuilder = new StringBuilder();
                 StringBuilder authBuilder = new StringBuilder();
                 StringBuilder clntExBuilder = new StringBuilder();
+                T_OperationLog opLog = new T_OperationLog();
+                StringBuilder logDesc = new StringBuilder();
+                logDesc.Append(DateTime.Now.ToString() + head.Account + "修改了会员" + model.C_UserID + " 以下信息：");
 
                 #region 组装修改会员Sql
                 clntBuilder.Append("UPDATE T_Client set ");
@@ -579,6 +581,7 @@ namespace DAL.LogicDAL
                     clntBuilder.Append(",Min_XD =" + model.C_MN_Z);
                     clntBuilder.Append(",Min_ZD =" + model.C_MN_Z);
                     clntBuilder.Append(",Min_H =" + model.C_MN_Z);
+                    logDesc.Append("把最小限红改为了" + model.C_MN_Z + "；");
                 }
                 if (model.C_MX_Z != null)
                 {
@@ -587,6 +590,7 @@ namespace DAL.LogicDAL
                     clntBuilder.Append(",Max_XD =" + model.C_MX_Z / 10);
                     clntBuilder.Append(",Max_ZD =" + model.C_MX_Z / 10);
                     clntBuilder.Append(",Max_H =" + model.C_MX_Z / 10);
+                    logDesc.Append("把最大限红改为了" + model.C_MX_Z + "；");
                 }
                 if (!string.IsNullOrEmpty(model.C_F2))
                 {
@@ -595,18 +599,22 @@ namespace DAL.LogicDAL
                 if (model.C_WashT != null)
                 {
                     clntBuilder.Append(",WashType ='" + ((model.C_WashT) == true ? "s" : "d") + "'");
+                    logDesc.Append("把洗码类型修改为了" + ((model.C_WashT == true) ? "双边" : "单边") + "；");
                 }
                 if (model.C_WashR != null)
                 {
                     clntBuilder.Append(",WashRate =" + model.C_WashR);
+                    logDesc.Append("把洗码率修改为" + model.C_WashR + "；");
                 }
                 if (model.C_DrawR != null)
                 {
                     clntBuilder.Append(",DrawRate =" + model.C_DrawR);
+                    logDesc.Append("把和局率修改为" + model.C_DrawR + "；");
                 }
                 if (!string.IsNullOrEmpty(model.C_State))
                 {
                     clntBuilder.Append(",State ='" + model.C_State + "'");
+                    logDesc.Append("把状态修改为" + model.C_State + "；");
                 }
                 clntBuilder.Append(" WHERE ClientID = '" + model.C_ID + "'");
                 strSql = strSql.Replace("${updateClient}", clntBuilder.ToString());
@@ -684,6 +692,15 @@ namespace DAL.LogicDAL
                 strSql = strSql.Replace("\"##", "");
 
                 Db.Context_SqlServer.FromSql(strSql).ToDataSet();
+                opLog.LogID = Guid.NewGuid().ToString().Replace("-", "");
+                opLog.LogTime = string.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                opLog.LogType = "修改会员";
+                opLog.OpID = head.LoginID;
+                opLog.LogInfo = logDesc.ToString();
+                if (Db.Context_SqlServer.Insert<T_OperationLog>(opLog) <= 0)
+                {
+                    Common.LogHelper.WriteErrLog(typeof(AgentListDAL), "插入" + head.Account + "修改会员日志失败");
+                }
                 error.ErrMsg = "修改会员成功";
                 error.ErrNo = "0000";
                 return true;
@@ -731,6 +748,16 @@ namespace DAL.LogicDAL
                 strSql = strSql.Replace("${ClientID}", model.C_ID);
                 strSql = strSql.Replace("${Pwd}", model.C_Pwd);
                 Db.Context_SqlServer.FromSql(strSql).ToDataSet();
+                T_OperationLog opLog = new T_OperationLog();
+                opLog.LogID = Guid.NewGuid().ToString().Replace("-", "");
+                opLog.LogInfo = DateTime.Now.ToString() + "代理" + head.Account + "修改了下级代理" + model.C_UserID + "的登录密码";
+                opLog.LogTime = string.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                opLog.OpID = head.LoginID;
+                opLog.LogType = "修改代理登录密码";
+                if (Db.Context_SqlServer.Insert<T_OperationLog>(opLog) <= 0)
+                {
+                    Common.LogHelper.WriteErrLog(typeof(AgentListDAL), "插入" + head.Account + "修改会员密码日志失败");
+                }
                 error.ErrMsg = "会员密码修改成功";
                 error.ErrNo = "0000";
                 return true;
@@ -765,7 +792,7 @@ namespace DAL.LogicDAL
                 if (CommonDAL.IsH5Clnt(model.C_ID))
                 {
                     isH5 = true;
-                    h5MgrId = Db.Context_SqlServer.FromSql("select [value] from T_Cfg where Name ='H5_ManageID'").ToScalar<string>();
+                    h5MgrId = CommonDAL.GetH5MgrID();
                     if (model.C_IsAdd == true && !string.Equals(h5MgrId.Trim(), head.LoginID.Trim(), StringComparison.OrdinalIgnoreCase))
                     {
                         error.ErrMsg = "当前代理不能对H5会员下分";
@@ -784,7 +811,7 @@ namespace DAL.LogicDAL
                     return false;
                 }
                 string ownId = (model.C_LevelPoint != null && model.C_LevelPoint == "1") ? model.C_AID : head.LoginID;
-                ownId = (isH5 && model.C_IsAdd == true) ? h5MgrId : ownId;//如果是H5会员下分则设置收分代理ID为分源代理ID
+                ownId = (isH5 && model.C_IsAdd == true) ? CommonDAL.GetH5LenderID() : ownId;//如果是H5会员下分则设置收分代理ID为分源代理ID
                 strSql = strSql.Replace("${AgentID}", ownId);
                 strSql = strSql.Replace("${CreateID}", head.LoginID);
                 strSql = strSql.Replace("${Point}", model.C_Point.ToString());//上下分点数

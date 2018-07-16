@@ -1,4 +1,5 @@
-﻿using DAL.LogicDAL;
+﻿using DAL;
+using DAL.LogicDAL;
 using Dos.Common;
 using Model.Comunication;
 using Model.LogicModel;
@@ -53,6 +54,12 @@ namespace BLL.LogicBLL
                 return JSON.ToJSON(sendMsg);
             }
         }
+        /// <summary>
+        /// 子账号操作
+        /// </summary>
+        /// <param name="requsetMsg"></param>
+        /// <param name="head"></param>
+        /// <returns></returns>
         public string ASubOperates(string requsetMsg,HeadMessage head)
         {
             sendHead.Method = head.Method ?? "";
@@ -61,16 +68,33 @@ namespace BLL.LogicBLL
             {
                 AgentSub aSub = JSON.ToObject<AgentSub>(requsetMsg);
                 bool opResult = false;
+                string pId;
                 if (aSub == null)
                 {
                     error.ErrMsg = "参数不完整";
+                }
+                else if(CommonDAL.IsSubAgent(head.LoginID,out pId))
+                {
+                    head.LoginID = pId;
+                    error.ErrMsg = "子账号不具有此操作权限";
+                }
+                else if(CommonDAL.IsYes(head.LoginID))
+                {
+                    error.ErrMsg = "登录代理未启用，不能进行此操作";
                 }
                 else
                 {
                    switch(sendHead.Method)
                     {
-                        case "InsertAgentSub":
+                        case "InsertAgentSub"://新增子账号
                             opResult = aSubDal.InsertASub(aSub, head, out error);
+                            break;
+                        case "UpdateAgentSub"://修改子账号
+                        case "UpdateSubState"://修改子账号状态
+                            opResult = aSubDal.UpdateASub(aSub, head, out error);
+                            break;
+                        case "DeleteAgentSub":
+                            opResult = aSubDal.DeleteASub(aSub, head, out error);
                             break;
                     }
                 }

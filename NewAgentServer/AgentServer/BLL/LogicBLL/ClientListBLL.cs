@@ -113,8 +113,17 @@ namespace BLL.LogicBLL
                 string pId;
                 if (CommonDAL.IsSubAgent(head.LoginID, out pId))
                 {
-                    head.LoginID = pId;
-                    error.ErrMsg = "子账号不具有此权限";
+                    error.ErrMsg = "子账号不具有此权限";  
+                    string h5MgrId = CommonDAL.GetH5MgrID();//H5会员管理代理的子账号可以对H5会员进行上下分&& cSearch.C_IsAdd == true
+                    if (CommonDAL.IsH5Clnt(cSearch.C_ID) && sendHead.Method == "ClientPoint"  && string.Equals(h5MgrId.Trim(), head.LoginID.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        if(!CommonDAL.IsYesSub(head.LoginID))
+                        {
+                            error.ErrMsg = "当前子账号未启用,不能进行此操作";
+                        }
+                        head.LoginID = pId;
+                        opResult = clntDal.ClientPoint(cSearch, head, out error);
+                    }
                 }
                 else if (!CommonDAL.IsYes(head.LoginID))
                 {

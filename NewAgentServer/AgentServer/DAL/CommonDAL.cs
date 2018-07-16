@@ -297,6 +297,87 @@ namespace DAL
                 throw;
             }
         }
+        /// <summary>
+        /// 获取H5会员管理代理ID
+        /// </summary>
+        /// <returns></returns>
+        public static string GetH5MgrID()
+        {
+            try
+            {
+                return Db.Context_SqlServer.FromSql("select [value] from T_Cfg where Name ='H5_ManageID'").ToScalar<string>();
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
+        /// <summary>
+        /// 获取H5会员收分代理ID
+        /// </summary>
+        /// <returns></returns>
+        public static string GetH5LenderID()
+        {
+            try
+            {
+                return Db.Context_SqlServer.FromSql("select [value] from T_Cfg where Name ='H5_LenderID'").ToScalar<string>();
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
+        /// <summary>
+        /// 获取H5会员放分代理ID
+        /// </summary>
+        /// <returns></returns>
+        public static string GetH5BorrowID()
+        {
+            try
+            {
+                return Db.Context_SqlServer.FromSql("select [value] from T_Cfg where Name ='H5_BorrowerID'").ToScalar<string>();
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
+        /// <summary>
+        /// 获取指定代理及下属代理Id加''及（）的代理ID字符串
+        /// </summary>
+        /// <param name="aid"></param>
+        /// <returns></returns>
+        public static string GetAid(string aid)
+        {
+            try
+            {
+                string idSql = Common.SqlTemplateCommon.GetSql("GetAIDList");
+                if (string.IsNullOrEmpty(idSql))
+                {
+                    return null;
+                }
+                idSql = idSql.Replace("${AgentID}", aid);
+                string idString = "";
+                List<string> idList = Db.Context_SqlServer.FromSql(idSql).ToList<string>();
+                if (idList != null && idList.Count > 0)
+                {
+                    for (int i = 0; i < idList.Count; i++)
+                    {
+                        idList[i] = "'" + idList[i] + "'";
+                    }
+                    idString = string.Join(",", idList);
+                }
+                return idString;
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
     }
 }
 

@@ -109,7 +109,7 @@ namespace Model.LogicModel
         /// <summary>
         /// 最大限红
         /// </summary>
-        public int? A_Mx_Z
+        public int? A_MX_Z
         {
             get
             {
