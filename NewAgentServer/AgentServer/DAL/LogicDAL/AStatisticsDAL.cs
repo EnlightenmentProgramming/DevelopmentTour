@@ -170,6 +170,44 @@ namespace DAL.LogicDAL
                 return null;
             }
         }
-        
+        /// <summary>
+        /// 获取代理洗码费抽水结算统计
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public string GetOddsWashF4Agent(StatisticsModel model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                string strSql = Common.SqlTemplateCommon.GetSql("GetACOdds4Agent");
+                if (string.IsNullOrEmpty(strSql))
+                {
+                    error.ErrMsg = "服务端没有读取到GetACOdds4Agent数据模板，请联系管理员";
+                    return null;
+                }
+                if (string.IsNullOrEmpty(model.A_ID))
+                {
+                    error.ErrMsg = "没有接收到请求参数";
+                    return null;
+                }
+                strSql = strSql.Replace("${AgentID}", model.A_ID);
+                error.ErrMsg = "获取数据成功";
+                error.ErrNo = "0000";
+                return JSON.ToJSON(new
+                {
+                    JsonData = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(strSql).ToDataTable())
+                });
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(AStatisticsDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return null;
+            }
+        }
     }
 }

@@ -123,6 +123,12 @@ namespace BLL.LogicBLL
                         case "AgentClear":
                             insertRes = agentListDal.ClearAgent(aSearch, head, out error);
                             break;
+                        case "SettleOdds4Agent":
+                            insertRes = agentListDal.SettleOdds(aSearch, head, out error);
+                            break;
+                        case "SettleWashF4Agent":
+                            insertRes = agentListDal.SettleWashF(aSearch, head, out error);
+                            break;
                         default:
                             insertRes = false;
                             break;

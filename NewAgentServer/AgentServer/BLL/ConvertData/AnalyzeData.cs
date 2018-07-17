@@ -138,6 +138,8 @@ namespace BLL.ConvertData
                             case "AgentSelfModifyPwd"://修改登录代理密码
                             case "AgentPoint"://代理上下分
                             case "AgentClear"://代理清零
+                            case "SettleOdds4Agent"://结算代理抽水
+                            case "SettleWashF4Agent"://结算代理洗码费
                                 if (hasRequestParameters && isLoginAuth)
                                 {
                                     isGoupRetMsg = false;
@@ -177,6 +179,7 @@ namespace BLL.ConvertData
                             case "UpdateClient"://修改会员
                             case "ClientModifyPwd"://修改会员密码
                             case "ClientPoint"://会员上下分
+                            case "SettleWashF4Clnt"://结算会员洗码费
                                 if (hasRequestParameters && isLoginAuth)
                                 {
                                     isGoupRetMsg = false;
@@ -209,6 +212,9 @@ namespace BLL.ConvertData
                             case "H5ClntPointSum_A"://获取指定代理下所有H5会员第三方上分明细
                             case "RedEnvelopeSum"://查询指定代理自己及直属代理及直属会员下红包发放合计
                             case "RedEnvelopeDetail"://查询指定会员下红包发送明细
+                            case "GetSettleAccounts"://获取结算记录
+                            case "GetWashF4Clnt"://获取会员的抽水洗码费统计
+                            case "GetOddsWashF4Agent"://获取代理抽水及洗码费统计
                                 if (hasRequestParameters && isLoginAuth)
                                 {
                                     methodReturn = sBll.GetStatisticsData(reqMsg.RequestParams, head);

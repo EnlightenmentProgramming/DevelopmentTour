@@ -850,5 +850,82 @@ namespace DAL.LogicDAL
                 return false;
             }
         }
+        /// <summary>
+        /// 结算会员洗码费
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool SettleWashF(ClientSearc model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            DbTrans trans = null;
+            try
+            {
+                string strSql = Common.SqlTemplateCommon.GetSql("SetWashFlag");
+                string opSql = Common.SqlTemplateCommon.GetSql("SettleWashF");
+                if (string.IsNullOrEmpty(strSql) || string.IsNullOrEmpty(opSql))
+                {
+                    error.ErrMsg = "服务端没有读取到SetWashFlag数据模板，请联系管理员";
+                    return false;
+                }
+                string billID = Guid.NewGuid().ToString().Replace("-", "");
+                if (string.IsNullOrEmpty(model.C_ID) || string.IsNullOrEmpty(model.StartDate) || string.IsNullOrEmpty(model.EndDate))
+                {
+                    error.ErrMsg = "没有接收到正确的请求参数";
+                    return false;
+                }
+                strSql = strSql.Replace("${BillID}", billID);
+                strSql = strSql.Replace("${ClientID}", model.C_ID);
+                strSql = strSql.Replace("${SettleDate}", model.StartDate);
+                strSql = strSql.Replace("${EndDate}", model.StartDate);
+
+                opSql = opSql.Replace("${CreateID}", head.LoginID);
+                opSql = opSql.Replace("${ClientID}", model.C_ID);
+                opSql = opSql.Replace("${BillID}", billID);
+                opSql = opSql.Replace("${IP}", head.Ip);
+                opSql = opSql.Replace("${Address}", Common.CommonHelper.ipToAddr(head.Ip));
+                opSql = opSql.Replace("${Operator}", head.Account);
+                opSql = opSql.Replace("${StartDate}", model.StartDate);
+                opSql = opSql.Replace("${EndDate}", model.EndDate);
+
+                trans = Db.Context_SqlServer.BeginTransaction();
+                SettleModel settle = trans.FromSql(strSql).ToFirst<SettleModel>();
+                if(settle != null)
+                {
+                    opSql = opSql.Replace("${Counts}", settle.C_Counts.ToString());
+                    opSql = opSql.Replace("${Point}", ((int)settle.C_Amount).ToString());
+                    opSql = opSql.Replace("${WashRate}", settle.C_WashR);
+                    opSql = opSql.Replace("${WashSum}", settle.C_WashS.ToString());
+                    error.ErrMsg = "洗码费结算成功";
+
+                    trans.FromSql(opSql).ToDataSet();
+                    trans.Commit();
+                    return true;
+                }
+                else
+                {
+                    error.ErrMsg = "没有可结算的洗码费";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(ClientListDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                trans.Rollback();
+                return false;
+            }
+            finally
+            {
+                if (trans != null)
+                {
+                    trans.Close();
+                    trans.Dispose();
+                }
+            }
+        }
     }
 }

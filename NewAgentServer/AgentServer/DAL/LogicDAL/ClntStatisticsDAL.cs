@@ -978,5 +978,117 @@ namespace DAL.LogicDAL
                 return null;
             }
         }
+        /// <summary>
+        /// 获取结算记录
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public string GetSettleAccounts(StatisticsModel model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                string strSql = Common.SqlTemplateCommon.GetSql("GetAccounts");
+                string sumSql = Common.SqlTemplateCommon.GetSql("GetAccountCount");
+                string countSql = Common.SqlTemplateCommon.GetSql("GetAccountTotal");
+                if (string.IsNullOrEmpty(strSql) || string.IsNullOrEmpty(sumSql) || string.IsNullOrEmpty(countSql))
+                {
+                    error.ErrMsg = "服务端没有读取到GetAccounts数据模板，请联系管理员";
+                    return null;
+                }
+                List<AgentSearchModel> aList = new List<AgentSearchModel>();
+                string msg = "";
+                string whereSql = "";
+                aList = CommonDAL.GetAgentTree(head.LoginID, "name", model.A_UserID, out msg);
+                if (aList == null || aList.Count < 1)
+                {
+                    error.ErrMsg = msg;
+                    return null;
+                }
+
+                strSql = strSql.Replace("${curePage}", (model.PageSize ?? 20).ToString());
+                strSql = strSql.Replace("${pageSize}", (model.CurePage ?? 1).ToString());
+                strSql = strSql.Replace("${Operator}", model.A_UserID);
+                strSql = strSql.Replace("${StartDate}", model.StartDate);
+                strSql = strSql.Replace("${EndDate}", model.EndDate);
+
+                sumSql = sumSql.Replace("${Operator}", model.A_UserID);
+                sumSql = sumSql.Replace("${StartDate}", model.StartDate);
+                sumSql = sumSql.Replace("${EndDate}", model.EndDate);
+
+                countSql = countSql.Replace("${Operator}", model.A_UserID);
+                countSql = countSql.Replace("${StartDate}", model.StartDate);
+                countSql = countSql.Replace("${EndDate}", model.EndDate);
+
+                if (!string.IsNullOrEmpty(model.C_UserID))//按照结算源登录名称过滤
+                {
+                    whereSql += " and AccountSource = '" + model.C_UserID + "'";
+                }
+                if (!string.IsNullOrEmpty(model.GameT))//按结算类型过滤  "结算洗码" "结算抽水"
+                {
+                    whereSql += " and  AcType like '%" + model.GameT + "%'";
+                }
+                strSql = strSql.Replace("${WhereSql}", whereSql);
+                sumSql = sumSql.Replace("${WhereSql}", whereSql);
+                countSql = countSql.Replace("${WhereSql}", whereSql);
+
+                error.ErrNo = "0000";
+                error.ErrMsg = "获取数据成功";
+                return JSON.ToJSON(new
+                {
+                    JsonData = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(strSql).ToDataTable()),
+                    SumJson = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(sumSql).ToDataTable()),
+                    Count = Db.Context_SqlServer.FromSql(countSql).ToScalar<int>()
+                });
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(ClntStatisticsDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取会员的洗码费及抽水费结算情况
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public string GetOddsWashF4Clnt(StatisticsModel model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                string strSql = Common.SqlTemplateCommon.GetSql("GetWashFandOdds");
+                if (string.IsNullOrEmpty(strSql))
+                {
+                    error.ErrMsg = "服务端没有读取到GetAccounts数据模板，请联系管理员";
+                    return null;
+                }
+                if (string.IsNullOrEmpty(model.C_ID))
+                {
+                    error.ErrMsg = "没有接收到请求参数";
+                    return null;
+                }
+                strSql = strSql.Replace("${ClientID}", model.C_ID);
+                error.ErrMsg = "获取数据成功";
+                error.ErrNo = "0000";
+                return JSON.ToJSON(new
+                {
+                    JsonData = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(strSql).ToDataTable())
+                });
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(ClntStatisticsDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return null;
+            }
+        }
     }
 }

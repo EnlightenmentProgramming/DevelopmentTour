@@ -45,6 +45,9 @@ namespace BLL.LogicBLL
                         case "GetADayStatistics"://获取代理每日统计数据
                             responseMsg = sDal.GetADayStatistics(sModel, head, out error);
                             break;
+                        case "GetOddsWashF4Agent"://获取代理抽水及洗码费统计
+                            responseMsg = sDal.GetOddsWashF4Agent(sModel, head, out error);
+                            break;
                         case "GetClntStatistics"://获取会员统计数据
                             responseMsg = cDal.GetClntStatistics(sModel, head, out error);
                             break;
@@ -80,6 +83,12 @@ namespace BLL.LogicBLL
                             break;
                         case "RedEnvelopeDetail"://查询指定会员下红包发送明细
                             responseMsg = cDal.RedEnvelopeDetail(sModel, head, out error);
+                            break;
+                        case "GetSettleAccounts"://获取结算记录
+                            responseMsg = cDal.GetSettleAccounts(sModel, head, out error);
+                            break;
+                        case "GetWashF4Clnt"://获取会员洗码费统计
+                            responseMsg = cDal.GetOddsWashF4Clnt(sModel, head, out error);
                             break;
                     }
                 }

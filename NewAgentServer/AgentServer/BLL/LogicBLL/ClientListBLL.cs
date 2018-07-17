@@ -158,6 +158,9 @@ namespace BLL.LogicBLL
                         case "ClientPoint":
                             opResult = clntDal.ClientPoint(cSearch, head, out error);
                             break;
+                        case "SettleWashF4Clnt":
+                            opResult = clntDal.SettleWashF(cSearch, head, out error);
+                            break;
                     }
                 }
                 sendMsg.Head = JSON.ToJSON(sendHead);
