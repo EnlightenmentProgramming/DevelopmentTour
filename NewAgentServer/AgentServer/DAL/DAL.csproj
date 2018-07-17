@@ -59,6 +59,7 @@
     <Compile Include="LogicDAL\AStatisticsDAL.cs" />
     <Compile Include="LogicDAL\ClientListDAL.cs" />
     <Compile Include="LogicDAL\ClntStatisticsDAL.cs" />
+    <Compile Include="LogicDAL\LogDAL.cs" />
     <Compile Include="LogicDAL\LoginDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

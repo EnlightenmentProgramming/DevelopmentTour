@@ -1090,5 +1090,68 @@ namespace DAL.LogicDAL
                 return null;
             }
         }
+        /// <summary>
+        /// 获取交易记录
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public string GetTransactions(LogModel model,HeadMessage head,out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                string strSql = Common.SqlTemplateCommon.GetSql("TransactionLogPage");
+                string sumSql = Common.SqlTemplateCommon.GetSql("TransactionSum");
+                if (string.IsNullOrEmpty(strSql) || string.IsNullOrEmpty(sumSql))
+                {
+                    error.ErrMsg = "服务端没有读取到TransactionLogPage数据模板，请联系管理员";
+                    return null;
+                }
+                if (string.IsNullOrEmpty(model.L_Operator))
+                {
+                    error.ErrMsg = "没有接收到完整的请求参数";
+                    return null;
+                }
+                string nowDate = string.Format("yyyy-MM-dd HH:mm:ss", DateTime.Now);
+                strSql = strSql.Replace("${Operator}", model.L_Operator);
+                strSql = strSql.Replace("${StartDate}", model.StartDate ?? nowDate);
+                strSql = strSql.Replace("${EndDate}", model.EndDate ?? nowDate);
+                strSql = strSql.Replace("${PageSize}", (model.PageSize ?? 20).ToString());
+                strSql = strSql.Replace("${CurePage}", (model.CurePage ?? 20).ToString());
+
+                sumSql = sumSql.Replace("${Operator}", model.L_Operator);
+                sumSql = sumSql.Replace("${StartDate}", model.StartDate ?? nowDate);
+                sumSql = sumSql.Replace("${EndDate}", model.EndDate ?? nowDate);
+
+                string whereSql = "";
+                if (!string.IsNullOrEmpty(model.L_SourceUser))
+                {
+                    whereSql += " and SourceUser = '" + model.L_SourceUser + "'";
+                }
+                string msg;
+                List<AgentSearchModel> alist = CommonDAL.GetAgentTree(head.LoginID, "name", model.L_Operator, out msg);
+                if (alist == null || alist.Count < 0)
+                {
+                    error.ErrMsg = msg;
+                    return null;
+                }
+                error.ErrMsg = "获取数据成功";
+                error.ErrNo = "0000";
+                return JSON.ToJSON(new
+                {
+                    JsonData = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(strSql).ToDataTable()),
+                    SumJson = Common.CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(sumSql).ToDataTable())
+                });
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(ClntStatisticsDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return null;
+            }
+        }
     }
 }

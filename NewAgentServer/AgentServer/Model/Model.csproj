@@ -67,6 +67,7 @@
     <Compile Include="LogicModel\ClientOdds.cs" />
     <Compile Include="LogicModel\ClientSearc.cs" />
     <Compile Include="LogicModel\GameType.cs" />
+    <Compile Include="LogicModel\LogModel.cs" />
     <Compile Include="LogicModel\SettleModel.cs" />
     <Compile Include="LogicModel\StatisticsModel.cs" />
     <Compile Include="LogicModel\TableModel.cs" />

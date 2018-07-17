@@ -221,12 +221,22 @@ namespace BLL.ConvertData
                                 }
                                 break;
                             #endregion
+                            #region 获取日志记录
+                            case "GetTransactions"://获取交易记录
+                            case "GetLoginLog"://获取登录日志
+                            case "GetOperationLog"://获取操作日志
+                                if (hasRequestParameters && isLoginAuth)
+                                {
+                                    isGoupRetMsg = false;
+                                    methodReturn = sBll.GetLog(reqMsg.RequestParams, head);
+                                }
+                                break; 
+                            #endregion
                             default:
                                 error.ErrNo = "0005";
                                 error.ErrMsg = "没有对应的接口：" + method;
                                 break;
                         }
-
                     }
                     else
                     {

@@ -18,6 +18,7 @@ namespace BLL.LogicBLL
         HeadMessage sendHead = new HeadMessage();
         AStatisticsDAL sDal = new AStatisticsDAL();
         ClntStatisticsDAL cDal = new ClntStatisticsDAL();
+        LogDAL lDal = new LogDAL();
         public string GetStatisticsData(string requestMsg,HeadMessage head)
         {
             sendHead.Method = head.Method ?? "";
@@ -89,7 +90,60 @@ namespace BLL.LogicBLL
                             break;
                         case "GetWashF4Clnt"://获取会员洗码费统计
                             responseMsg = cDal.GetOddsWashF4Clnt(sModel, head, out error);
+                            break;                      
+                    }
+                }
+                sendMsg.Head = JSON.ToJSON(sendHead);
+                sendMsg.Error = JSON.ToJSON(error);
+                sendMsg.Reponse = string.IsNullOrEmpty(responseMsg) ? "{}" : responseMsg;
+                return JSON.ToJSON(sendMsg);
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                sendMsg.Head = JSON.ToJSON(sendHead);
+                sendMsg.Reponse = "{}";
+                sendMsg.Error = JSON.ToJSON(error);
+                return JSON.ToJSON(sendMsg);
+            }
+        }
+        /// <summary>
+        /// 获取日志记录
+        /// </summary>
+        /// <param name="requestMsg"></param>
+        /// <param name="head"></param>
+        /// <returns></returns>
+        public string GetLog(string requestMsg,HeadMessage head)
+        {
+            sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
+            string responseMsg = "";
+            string pId;
+            try
+            {
+                if (CommonDAL.IsSubAgent(head.LoginID, out pId))
+                {
+                    head.LoginID = pId;//如果当前登录代理是子账号则，将此子账号的所属代理ID赋值为当前登录代理ID
+                }
+                LogModel sModel = JSON.ToObject<LogModel>(requestMsg);
+                if (sModel == null)
+                {
+                    error.ErrMsg = "没有接收到正确的请求参数";
+                }
+                else
+                {
+                    switch (sendHead.Method)
+                    {
+                        case "GetTransactions"://获取交易记录数据
+                            responseMsg = cDal.GetTransactions(sModel, head, out error);
                             break;
+                        case "GetLoginLog"://获取登录日志
+                            responseMsg = lDal.GetLoginLog(sModel, head, out error);
+                            break;
+                        case "GetOperationLog"://获取操作日志
+                            responseMsg = lDal.GetOperationLog(sModel, head, out error);
+                            break;        
                     }
                 }
                 sendMsg.Head = JSON.ToJSON(sendHead);
