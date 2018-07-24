@@ -108,6 +108,7 @@ namespace BLL.ConvertData
                             case "GetLoginACount"://获取指定时段内指定代理统计数据
                             case "AgentClientCount"://获取指定时段内指定代理下会员统计数据
                             case "GetAorCAgentData"://获取指定代理或指定会员所属代理统计数据
+                            case "GetAListByID"://根据代理ID获取指定代理数据
                                 if (hasRequestParameters && isLoginAuth)
                                 {
                                     isGoupRetMsg = false;

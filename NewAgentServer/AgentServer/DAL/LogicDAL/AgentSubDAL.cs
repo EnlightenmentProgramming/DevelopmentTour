@@ -97,7 +97,7 @@ namespace DAL.LogicDAL
                 T_AgentSub dbASub = new T_AgentSub();
                 dbASub.AgentID = model.AS_AID;
                 dbASub.AgentSubID = Guid.NewGuid().ToString().Replace("-", "");
-                dbASub.State = model.AS_State;
+                dbASub.State = "YES"; //model.AS_State;
                 dbASub.Pwd = model.AS_Pwd;
                 dbASub.LogName = model.AS_UserID;
                 dbASub.AgentSubName = model.AS_Name;

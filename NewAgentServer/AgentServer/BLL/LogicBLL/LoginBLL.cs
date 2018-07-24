@@ -26,7 +26,6 @@ namespace BLL.LogicBLL
             error.ErrNo = "0004";
             try
             {
-                sendHead.Token = Guid.NewGuid().ToString().Replace("-", "");
                 AgentSearchModel aSearch = JSON.ToObject<AgentSearchModel>(requestMsg);
                 string responseMsg = "";
                 string pId;
@@ -44,6 +43,7 @@ namespace BLL.LogicBLL
                     switch(sendHead.Method)
                     {
                         case "Login":
+                            sendHead.Token = Guid.NewGuid().ToString().Replace("-", "");
                             responseMsg = loginDal.Login(aSearch, head, out error);
                             if (error.ErrNo == "0000")
                             {
@@ -61,6 +61,7 @@ namespace BLL.LogicBLL
                                         outSend.Error = JSON.ToJSON(outErr);
                                         WsSocket ws = new WsSocket();
                                         ws.Send(JSON.ToJSON(outSend), kv.Value.cSocket, true);
+                                        ws.closeConnect(kv.Value.cSocket);//断开之前的连接
                                     }
                                 }
                                 client.LogName = aSearch.A_UserID;
@@ -83,6 +84,9 @@ namespace BLL.LogicBLL
                             break;
                         case "GetAorCAgentData":
                             responseMsg = loginDal.GetAorCAgentData(aSearch, head, out error);
+                            break;
+                        case "GetAListByID":
+                            responseMsg = loginDal.GetAListByID(aSearch, head, out error);
                             break;
                         default:
                             responseMsg = "";

@@ -41,45 +41,46 @@ namespace DAL.LogicDAL
                 if (!string.IsNullOrEmpty(model.C_Type))//如果不传则默认取H5h和常规会员
                 {
                     whereSql += " and C_Type ='" + model.C_Type + "'";
-                }
-                if (string.IsNullOrEmpty(model.C_UserID))
+                }               
+                if (!string.IsNullOrEmpty(model.C_InType))//默认查询常规会员和代理直接邀请的会员
                 {
-                    if (!string.IsNullOrEmpty(model.C_InType))//默认查询常规会员和代理直接邀请的会员
+                    switch (model.C_InType)
                     {
-                        switch (model.C_InType)
-                        {
-                            case "A"://只过滤指定代理直接邀请会员
-                                whereSql += " and C_InType ='A'";
-                                break;
-                            case "C"://只过滤指定代理下会员邀请会员
-                                whereSql += " and C_InType ='C'";
-                                break;
-                            case "O"://只过滤常规会员
-                                whereSql += " and C_InType ='O'";
-                                break;
-                            case "AC"://只过滤H5会员
-                                whereSql += " and (C_InType ='A' or C_InType ='C')";
-                                break;
-                            case "OC"://只过滤H5会员
-                                whereSql += " and (C_InType ='O' or C_InType ='C')";
-                                break;
-                            case "AOC"://只过滤H5会员
-                                whereSql += " and (C_InType ='O' or C_InType ='C' or C_InType ='A')";
-                                break;
-                            default:
-                                whereSql += " and (C_InType ='A' or C_InType ='O')";
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        whereSql += " and (C_InType ='A' or C_InType ='O')";
+                        case "A"://只过滤指定代理直接邀请会员
+                            whereSql += " and C_InType ='A'";
+                            break;
+                        case "C"://只过滤指定代理下会员邀请会员
+                            whereSql += " and C_InType ='C'";
+                            break;
+                        case "O"://只过滤常规会员
+                            whereSql += " and C_InType ='O'";
+                            break;
+                        case "AC"://只过滤H5会员
+                            whereSql += " and (C_InType ='A' or C_InType ='C')";
+                            break;
+                        case "OC"://只过滤H5会员
+                            whereSql += " and (C_InType ='O' or C_InType ='C')";
+                            break;
+                        case "AOC"://只过滤H5会员
+                            whereSql += " and (C_InType ='O' or C_InType ='C' or C_InType ='A')";
+                            break;
+                        default:
+                            whereSql += " and (C_InType ='A' or C_InType ='O')";
+                            break;
                     }
                 }
                 else
                 {
-                    whereSql += " and (C_InType ='A' or C_InType ='O' or C_InType ='C')";
+                    if (string.IsNullOrEmpty(model.C_UserID))
+                    {
+                        whereSql += " and (C_InType ='A' or C_InType ='O')";
+                    }
+                    else
+                    {
+                        whereSql += " and (C_InType ='A' or C_InType ='O' or C_InType ='C')";
+                    }
                 }
+                
                 sqlStr = sqlStr.Replace("${whereSql}", whereSql);
                 List<AgentSearchModel> aList;
                 string msg;
@@ -91,14 +92,15 @@ namespace DAL.LogicDAL
                 }
                 else
                 {
-                    string id = Db.Context_SqlServer.FromSql("select ClientID from T_Client where LogName ='" + model.C_UserID + "'").ToScalar<string>();
-                    string aId = Db.Context_SqlServer.FromSql("select AgentID from T_Client where LogName ='" + model.C_UserID + "'").ToScalar<string>();
-                    curStr = curStr.Replace("${AgentID}", id);
-                    sqlStr = sqlStr.Replace("${AgentID}", id);
+                    //string id = Db.Context_SqlServer.FromSql("select ClientID from T_Client where LogName ='" + model.C_UserID + "'").ToScalar<string>();
+                    //string aId = Db.Context_SqlServer.FromSql("select AgentID from T_Client where LogName ='" + model.C_UserID + "'").ToScalar<string>();
+                    T_Client clnt = ClientListDAL.First(c => c.LogName == model.C_UserID);
+                    curStr = curStr.Replace("${AgentID}", clnt.ClientID);
+                    sqlStr = sqlStr.Replace("${AgentID}", clnt.ClientID);
                     aList = CommonDAL.GetAgentTree(head.LoginID, model.C_UserID, out msg);
                     if (aList == null)
                     {
-                        aList = CommonDAL.GetAgentTree(head.LoginID, "id", aId, out msg);
+                        aList = CommonDAL.GetAgentTree(head.LoginID, "id", clnt.AgentID, out msg);
                     }
                 }
                 if (aList == null || aList.Count <= 0)
@@ -175,6 +177,8 @@ namespace DAL.LogicDAL
                     return null;
                 }
                 strSql = strSql.Replace("${AgentID}", model.C_AID);
+                strSql = strSql.Replace("${PageSize}", (model.PageSize ?? 20).ToString());
+                strSql = strSql.Replace("${CurePage}", (model.CurePage ?? 1).ToString());
                 List<AgentSearchModel> aList = new List<AgentSearchModel>();
                 string messge;
                 aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.C_AID, out messge);
@@ -248,6 +252,19 @@ namespace DAL.LogicDAL
                 T_Client dbClnt = new T_Client();
                 T_ClientEx dbClntEx = new T_ClientEx();
                 T_OperationLog opLog = new T_OperationLog();
+
+                T_Agent pAgent = AgentListDAL.First(a => a.AgentID == model.C_AID);
+                if(pAgent == null)
+                {
+                    error.ErrMsg = "指定的所属代理无效，新增会员失败";
+                    return false;
+                }
+                if (model.C_WashR != null && model.C_WashR > pAgent.WashRate) model.C_WashR = pAgent.WashRate;//如果新增会员的洗码率大于父级代理的洗码率则赋值为父级代理的洗码率
+                if (model.C_DrawR != null && model.C_DrawR > pAgent.DrawRate) model.C_DrawR = pAgent.DrawRate;//如果新增会员的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                if (model.C_MX_Z != null && model.C_MX_Z > pAgent.Max_Z) model.C_MX_Z = pAgent.Max_Z;//如果新增会员的最大限红大于父级代理的最大限红则赋值为父级代理的最大限红
+                if (model.C_MN_Z != null && model.C_MN_Z < pAgent.Min_Z) model.C_MN_Z = pAgent.Min_Z;//如果新增会员的最小限红小于父级代理的最小限红则赋值为父级代理的最小限红
+
+
                 #region 构造桌台权限
                 if (tableList != null && tableList.Count > 0)
                 {
@@ -563,6 +580,30 @@ namespace DAL.LogicDAL
                 StringBuilder logDesc = new StringBuilder();
                 logDesc.Append(DateTime.Now.ToString() + head.Account + "修改了会员" + model.C_UserID + " 以下信息：");
 
+                string pSql = "select a.AgentID A_ID,a.WashRate A_WashR,a.DrawRate A_DrawR,a.IntoRate A_IntoR,[dbo].[Base64Decode](a.F_3) A_Perm,a.Max_Z  A_MX_Z,a.Min_Z A_MN_Z from T_Agent a ,T_CLient b where b.ClientID ='" + model.C_ID + "' and a.AgentID = b.AgentID";
+                AgentSearchModel pAgent = Db.Context_SqlServer.FromSql(pSql).ToFirst<AgentSearchModel>();
+
+                if (model.C_WashR != null && model.C_WashR > pAgent.A_WashR)
+                {
+                    error.ErrMsg = "洗码率超出父级代理范围";
+                    return false;
+                }
+                if (model.C_DrawR != null && model.C_DrawR > pAgent.A_DrawR)
+                {
+                    error.ErrMsg = "和局率超出父级代理范围";
+                    return false;
+                }               
+                if (model.C_MX_Z != null && model.C_MX_Z > pAgent.A_MX_Z)
+                {
+                    error.ErrMsg = "最大限红超出父级代理范围";
+                    return false;
+                }
+                if (model.C_MN_Z != null && model.C_MN_Z < pAgent.A_MN_Z)
+                {
+                    error.ErrMsg = "最小限红超出父级范围";
+                    return false;
+                }
+
                 #region 组装修改会员Sql
                 clntBuilder.Append("UPDATE T_Client set ");
                 clntBuilder.Append(" ClientID ='" + model.C_ID + "'");
@@ -649,37 +690,40 @@ namespace DAL.LogicDAL
                 {
                     clntExBuilder.Append(",ClientDataShow=" + ((model.C_HdShow == true) ? 2 : 1));
                 }
-                if (model.C_ODF != null)
+                if(pAgent != null && !string.IsNullOrEmpty(pAgent.A_Perm) && pAgent.A_Perm.IndexOf("\"SetPV\":true") != -1) //需要所属代理有抽水权限才能修改赔率
                 {
-                    clntExBuilder.Append(",Odds_Fu_Client=" + model.C_ODF);
-                }
-                if (model.C_ODH != null)
-                {
-                    clntExBuilder.Append(",Odds_H_Client=" + model.C_ODH);
-                }
-                if (model.C_ODHe != null)
-                {
-                    clntExBuilder.Append(",Odds_He_Client=" + model.C_ODHe);
-                }
-                if (model.C_ODL != null)
-                {
-                    clntExBuilder.Append(",Odds_Long_Client=" + model.C_ODL);
-                }
-                if (model.C_ODX != null)
-                {
-                    clntExBuilder.Append(",Odds_X_Client=" + model.C_ODX);
-                }
-                if (model.C_ODXD != null)
-                {
-                    clntExBuilder.Append(",Odds_XD_Client=" + model.C_ODXD);
-                }
-                if (model.C_ODZ != null)
-                {
-                    clntExBuilder.Append(",Odds_Z_Client=" + model.C_ODZ);
-                }
-                if (model.C_ODZD != null)
-                {
-                    clntExBuilder.Append(",Odds_ZD_Client=" + model.C_ODZD);
+                    if (model.C_ODF != null)
+                    {
+                        clntExBuilder.Append(",Odds_Fu_Client=" + model.C_ODF);
+                    }
+                    if (model.C_ODH != null)
+                    {
+                        clntExBuilder.Append(",Odds_H_Client=" + model.C_ODH);
+                    }
+                    if (model.C_ODHe != null)
+                    {
+                        clntExBuilder.Append(",Odds_He_Client=" + model.C_ODHe);
+                    }
+                    if (model.C_ODL != null)
+                    {
+                        clntExBuilder.Append(",Odds_Long_Client=" + model.C_ODL);
+                    }
+                    if (model.C_ODX != null)
+                    {
+                        clntExBuilder.Append(",Odds_X_Client=" + model.C_ODX);
+                    }
+                    if (model.C_ODXD != null)
+                    {
+                        clntExBuilder.Append(",Odds_XD_Client=" + model.C_ODXD);
+                    }
+                    if (model.C_ODZ != null)
+                    {
+                        clntExBuilder.Append(",Odds_Z_Client=" + model.C_ODZ);
+                    }
+                    if (model.C_ODZD != null)
+                    {
+                        clntExBuilder.Append(",Odds_ZD_Client=" + model.C_ODZD);
+                    }
                 }
                 clntExBuilder.Append(" where ClientID ='" + model.C_ID + "'");
 
@@ -810,6 +854,12 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "服务端没有读取到A_SaveClientPoint数据模板，请联系管理员";
                     return false;
                 }
+                bool hasMatchp = new AgentListDAL().PHasAnyMatchP(head.LoginID, model.C_AID);
+                if(hasMatchp && (string.IsNullOrEmpty(model.C_LevelPoint) || model.C_LevelPoint != "1"))//上级代理链有配分权限，只能登录代理上下分
+                {
+                    error.ErrMsg = "上级代理链有配分权限，只能登录代理上下分";
+                    return false;
+                }
                 string ownId = (model.C_LevelPoint != null && model.C_LevelPoint == "1") ? model.C_AID : head.LoginID;
                 ownId = (isH5 && model.C_IsAdd == true) ? CommonDAL.GetH5LenderID() : ownId;//如果是H5会员下分则设置收分代理ID为分源代理ID
                 strSql = strSql.Replace("${AgentID}", ownId);
@@ -823,17 +873,17 @@ namespace DAL.LogicDAL
                 string opType = "", memo = "";
                 if (model.C_LevelPoint != null && model.C_LevelPoint == "1")
                 {
-                    memo = head.Account + "对会员" + model.C_UserID + "进行上级代理" + ((model.C_IsAdd == true) ? "下分" : "上分");
+                    memo = head.Account + "进行上级代理" + ((model.C_IsAdd == true) ? "下分" : "上分");
                     opType = (model.C_IsAdd == true) ? "会员上级代理下分" : "会员上级代理下分";
                 }
                 else
                 {
-                    memo = head.Account + "对会员" + model.C_UserID + "进行登录代理" + ((model.C_IsAdd == true) ? "下分" : "上分");
+                    memo = head.Account + "进行登录代理" + ((model.C_IsAdd == true) ? "下分" : "上分");
                     opType = (model.C_IsAdd == true) ? "会员登录代理下分" : "会员登录代理下分";
                 }
                 if (isH5 && model.C_IsAdd == true)
                 {
-                    memo = head.Account + "对H5会员" + model.C_UserID + "下分";
+                    memo = head.Account + "对H5会员下分";
                     opType = "H5会员下分";
                 }
                 strSql = strSql.Replace("${OpType}", opType);//登录代理ID

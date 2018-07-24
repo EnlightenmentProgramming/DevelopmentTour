@@ -123,10 +123,37 @@ namespace DAL.LogicDAL
                 {
                     error.ErrMsg = "必须填写代理名称";
                     return false;
-                } 
+                }
                 #endregion
                 #region 新增代理
-                T_Agent dbAgent = new T_Agent();
+                //AgentListDAL.First(a => a.AgentID == model.A_PID);//获取新增代理的所属代理
+                string pSql = "select AgentID A_ID,WashRate A_WashR,DrawRate A_DrawR,IntoRate A_IntoR,[dbo].[Base64Decode](F_3) A_Perm,Max_Z  A_MX_Z,Min_Z A_MN_Z from T_Agent where AgentID ='" + model.A_PID + "'";
+                AgentSearchModel pAgent = Db.Context_SqlServer.FromSql(pSql).ToFirst<AgentSearchModel>();
+                if (pAgent == null)
+                {
+                    error.ErrMsg = "没有找到指定父级代理，所以不能为它添加子代理";
+                    return false;
+                }
+                bool isOdds = false, isMatchP = false;
+                if (!string.IsNullOrEmpty(pAgent.A_Perm) && pAgent.A_Perm.IndexOf("\"MatchPoint\":true") != -1) isMatchP = true;
+                if (!string.IsNullOrEmpty(pAgent.A_Perm) && pAgent.A_Perm.IndexOf("\"SetPV\":true") != -1) isOdds = true;
+                if(!isOdds && model.A_SetPv == true)
+                {
+                    error.ErrMsg = "父级代理没有抽水权限，不能添加有抽水权限的子代理";
+                    return false;
+                }
+                if(!isMatchP && model.A_Matchp == true)
+                {
+                    error.ErrMsg = "父级代理没有配分权限，不能添加有配分权限的子代理";
+                    return false;
+                }
+                if (model.A_WashR != null && model.A_WashR > pAgent.A_WashR) model.A_WashR = pAgent.A_WashR;//如果新增代理的洗码率大于父级代理的洗码率则赋值为父级代理的洗码率
+                if (model.A_DrawR != null && model.A_DrawR > pAgent.A_DrawR) model.A_DrawR = pAgent.A_DrawR;//如果新增代理的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                if (model.A_IntoR != null && model.A_IntoR > pAgent.A_IntoR) model.A_IntoR = pAgent.A_IntoR;//如果新增代理的占成大于父级代理的占成则赋值为父级代理的占成
+                if (model.A_MX_Z != null && model.A_MX_Z > pAgent.A_MX_Z) model.A_MX_Z = pAgent.A_MX_Z;//如果新增代理的最大限红大于父级代理的最大限红则赋值为父级代理的最大限红
+                if (model.A_MN_Z != null && model.A_MN_Z < pAgent.A_MN_Z) model.A_MN_Z = pAgent.A_MN_Z;//如果新增代理的最小限红小于父级代理的最小限红则赋值为父级代理的最小限红
+
+                T_Agent dbAgent = new T_Agent();               
                 AgentPermission aPerm = new AgentPermission();
                 dbAgent.AgentID = Guid.NewGuid().ToString().Replace("-", "");
                 dbAgent.AgentName = model.A_Name;
@@ -287,7 +314,7 @@ namespace DAL.LogicDAL
                 {
                     error.ErrMsg = "必须传递需要修改代理的ID";
                     return res;
-                }               
+                }
                 sqlString = sqlString.Replace("${AgentID}", model.A_ID);
                 sqlString = sqlString.Replace("${LogName}", model.A_UserID);
                 string isUpClntOdds = "0";//是否需要将当前代理链上的所有会员恢复为标准赔率（只有当前取消当前代理抽水权限时需要做此操作）
@@ -295,6 +322,76 @@ namespace DAL.LogicDAL
                 StringBuilder logDesc = new StringBuilder();
                 logDesc.Append(DateTime.Now.ToString() + " " + head.Account + "修改了代理" + model.A_UserID + ":");
                 StringBuilder upBuilder = new StringBuilder();
+                
+                #region 检查父级范围
+                string pSql = "select a.AgentID A_ID,b.LogName A_UserID,b.IntoRate A_Prncpl,a.WashRate A_WashR,a.DrawRate A_DrawR,a.IntoRate A_IntoR,[dbo].[Base64Decode](a.F_3) A_Perm,a.Max_Z  A_MX_Z,a.Min_Z A_MN_Z from T_Agent a ,T_Agent b where b.AgentID ='" + model.A_ID + "' and a.AgentID = b.ParentID";
+                AgentSearchModel pAgent = Db.Context_SqlServer.FromSql(pSql).ToFirst<AgentSearchModel>();
+                if (pAgent == null)
+                {
+                    error.ErrMsg = "没有找到指定父级代理，所以修改代理";
+                    return false;
+                }
+                decimal subIntoR = GetSubMaxIntoR(model.A_ID);
+                bool isOdds = false, isMatchP = false, isSubMatchP = IsSubAMatchP(model.A_ID), isSubOdds = IsSubAOdds(model.A_ID);
+                if (!string.IsNullOrEmpty(pAgent.A_Perm) && pAgent.A_Perm.IndexOf("\"MatchPoint\":true") != -1) isMatchP = true;
+                if (!string.IsNullOrEmpty(pAgent.A_Perm) && pAgent.A_Perm.IndexOf("\"SetPV\":true") != -1) isOdds = true;
+                if (!isOdds && model.A_SetPv == true)
+                {
+                    error.ErrMsg = "父级代理没有抽水权限，子代理不能设置抽水权限";
+                    return false;
+                }
+                if (isSubOdds && model.A_SetPv == false)
+                {
+                    error.ErrMsg = "下级代理有抽水权限，请先取消下级代理的抽水权限";
+                    return false;
+                }
+                if ((pAgent.A_Prncpl == null || pAgent.A_Prncpl <= 0) && model.A_Matchp == true)
+                {
+                    error.ErrMsg = "不能给占成为0的代理设置配分权限";
+                    return false;
+                }
+                if (!isMatchP && model.A_Matchp == true)
+                {
+                    error.ErrMsg = "父级代理没有配分权限，子代理不能设置配分权限";
+                    return false;
+                }
+                if (isSubMatchP && model.A_Matchp == false)
+                {
+                    error.ErrMsg = "下级代理有配分权限，请先取消下级代理的配分权限";
+                    return false;
+                }
+                if (model.A_WashR != null && model.A_WashR > pAgent.A_WashR)
+                {
+                    error.ErrMsg = "洗码率超出父级代理范围";
+                    return false;
+                }
+                if (model.A_DrawR != null && model.A_DrawR > pAgent.A_DrawR)
+                {
+                    error.ErrMsg = "和局率超出父级代理范围";
+                    return false;
+                }
+                if (model.A_IntoR != null && model.A_IntoR > pAgent.A_IntoR)
+                {
+                    error.ErrMsg = "占成超出父级代理范围";
+                    return false;
+                }
+                if (model.A_IntoR != null && model.A_IntoR < subIntoR)
+                {
+                    error.ErrMsg = "占成超出下级代理范围";
+                    return false;
+                }
+                if (model.A_MX_Z != null && model.A_MX_Z > pAgent.A_MX_Z)
+                {
+                    error.ErrMsg = "最大限红超出父级代理范围";
+                    return false;
+                }
+                if (model.A_MN_Z != null && model.A_MN_Z < pAgent.A_MN_Z)
+                {
+                    error.ErrMsg = "最小限红超出父级范围";
+                    return false;
+                } 
+                #endregion
+
                 #region 组装修改代理信息Sql
                 upBuilder.Append("UPDATE T_Agent set ");
                 upBuilder.Append("AgentID = '" + model.A_ID + "' ");
@@ -322,10 +419,10 @@ namespace DAL.LogicDAL
                     {
                         if (oldPerm != null && oldPerm.A_SetPv == true && model.A_SetPv == false)
                         {
-                            isUpClntOdds = "1";
+                            isUpClntOdds = "1";//取消了代理的抽水权限，则将此代理分支下的会员赔率设置为标准赔率
                         }
                         newPerm.A_SetPv = model.A_SetPv;
-                        logDesc.Append("把代理" + model.A_UserID + "的抽水权限改为了" + model.A_SetPv + "；");
+                        logDesc.Append("把代理" + pAgent.A_UserID + "的抽水权限改为了" + model.A_SetPv + "；");
                     }
                     if (model.A_Matchp != null)
                     {
@@ -333,8 +430,9 @@ namespace DAL.LogicDAL
                         {
                             return res;
                         }
+
                         newPerm.A_MatchP = model.A_Matchp;
-                        logDesc.Append("把代理" + model.A_UserID + "的配分权限改为了" + model.A_Matchp + "；");
+                        logDesc.Append("把代理" + pAgent.A_UserID + "的配分权限改为了" + model.A_Matchp + "；");
                     }
                 }
                 catch (Exception)
@@ -342,7 +440,7 @@ namespace DAL.LogicDAL
                     if (model.A_SetPv != null)
                     {
                         newPerm.A_SetPv = model.A_SetPv;
-                        logDesc.Append("把代理" + model.A_UserID + "的抽水权限改为了" + model.A_Perm + "；");
+                        logDesc.Append("把代理" + pAgent.A_UserID + "的抽水权限改为了" + model.A_Perm + "；");
                     }
                     if (model.A_Matchp != null)
                     {
@@ -351,7 +449,7 @@ namespace DAL.LogicDAL
                             return res;
                         }
                         newPerm.A_MatchP = model.A_Matchp;
-                        logDesc.Append("把代理" + model.A_UserID + "的配分权限改为了" + model.A_Matchp + "；");
+                        logDesc.Append("把代理" + pAgent.A_UserID + "的配分权限改为了" + model.A_Matchp + "；");
                     }
                 }
                 if (newPerm != null && (newPerm.A_SetPv != null || newPerm.A_MatchP != null))
@@ -363,7 +461,7 @@ namespace DAL.LogicDAL
                 if (model.A_IntoR != null)
                 {
                     upBuilder.Append(",IntoRate =" + model.A_IntoR);
-                    logDesc.Append("把代理" + model.A_UserID + "的占成改为了" + model.A_IntoR + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的占成改为了" + model.A_IntoR + "；");
                 }
                 if (!string.IsNullOrEmpty(model.A_Name))
                 {
@@ -376,7 +474,7 @@ namespace DAL.LogicDAL
                     upBuilder.Append(" ,Max_H = " + model.A_MX_Z / 10);
                     upBuilder.Append(" ,Max_XD = " + model.A_MX_Z / 10);
                     upBuilder.Append(" ,Max_ZD = " + model.A_MX_Z / 10);
-                    logDesc.Append("把代理" + model.A_UserID + "的最大限红改为了" + model.A_MX_Z + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的最大限红改为了" + model.A_MX_Z + "；");
                 }
                 if (model.A_MN_Z != null)
                 {
@@ -385,7 +483,7 @@ namespace DAL.LogicDAL
                     upBuilder.Append(" ,Min_X = " + model.A_MN_Z);
                     upBuilder.Append(" ,Min_XD = " + model.A_MN_Z);
                     upBuilder.Append(" ,Min_H = " + model.A_MN_Z);
-                    logDesc.Append("把代理" + model.A_UserID + "的最小限红改为了" + model.A_MN_Z + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的最小限红改为了" + model.A_MN_Z + "；");
                 }
                 if (!string.IsNullOrEmpty(model.A_F2))
                 {
@@ -394,22 +492,22 @@ namespace DAL.LogicDAL
                 if (model.A_WashT != null)
                 {
                     upBuilder.Append(",WashType = '" + ((model.A_WashT == true) ? "S" : "D") + "'");
-                    logDesc.Append("把代理" + model.A_UserID + "的洗码类型改为了；" + ((model.A_WashT == true) ? "双边" : "单边"));
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的洗码类型改为了；" + ((model.A_WashT == true) ? "双边" : "单边"));
                 }
                 if (model.A_WashR != null)
                 {
                     upBuilder.Append(" ,WashRate = " + model.A_WashR);
-                    logDesc.Append("把代理" + model.A_UserID + "的洗码率改为了" + model.A_WashR + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的洗码率改为了" + model.A_WashR + "；");
                 }
                 if (!string.IsNullOrEmpty(model.A_State))
                 {
                     upBuilder.Append(",State = '" + model.A_State + "' ");
-                    logDesc.Append("把代理" + model.A_UserID + "的状态改为了" + model.A_State + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的状态改为了" + model.A_State + "；");
                 }
                 if (model.A_DrawR != null)
                 {
                     upBuilder.Append(",DrawRate = " + model.A_DrawR);
-                    logDesc.Append("把代理" + model.A_UserID + "的和局率改为了" + model.A_DrawR + "；");
+                    logDesc.Append("把代理" + pAgent.A_UserID + "的和局率改为了" + model.A_DrawR + "；");
                 }
                 upBuilder.Append(" where AgentID ='"+model.A_ID+"'");
                 #endregion
@@ -496,7 +594,7 @@ namespace DAL.LogicDAL
                         error.ErrMsg = "修改配分权限之前请先结算洗码费";
                         return false;
                     }
-                    if (aReport.A_GroupPrinc > 0)
+                    if ((aReport.A_GroupPrinc - aReport.H5Balance)> 0)
                     {
                         error.ErrMsg = "修改配分权限之前请先清零此代理";
                         return false;
@@ -631,6 +729,11 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "上下分不在正确范围";
                     return false;
                 }
+                if(PHasAnyMatchP(head.LoginID,model.A_ID) && (string.IsNullOrEmpty(model.A_LevelPoint) || model.A_LevelPoint != "1"))
+                {
+                    error.ErrMsg = "上级代理之间有配分权限，不允许跨级上下分";
+                    return false;
+                }
                 string strSql = SqlTemplateCommon.GetSql("A_SaveAgentPoint");
                 if (string.IsNullOrEmpty(strSql))
                 {
@@ -682,6 +785,8 @@ namespace DAL.LogicDAL
                     return null;
                 }
                 strSql = strSql.Replace("${AgentID}", model.A_ID);
+                strSql = strSql.Replace("${PageSize}", (model.PageSize ?? 20).ToString());
+                strSql = strSql.Replace("${CurePage}", (model.CurePage ?? 1).ToString());
                 List<AgentSearchModel> aList = new List<AgentSearchModel>();
                 string messge;
                 aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out messge);                

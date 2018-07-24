@@ -369,5 +369,52 @@ namespace DAL.LogicDAL
                 return "";
             }
         }
+        /// <summary>
+        /// 根据代理ID获取代理数据
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public string GetAListByID(AgentSearchModel model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                if (model == null || string.IsNullOrEmpty(model.A_ID))
+                {
+                    error.ErrNo = "0003";
+                    error.ErrMsg = "没有接收到参数";
+                    return null;
+                }
+                string strSql = SqlTemplateCommon.GetSql("GetAListByID");
+                if (string.IsNullOrEmpty(strSql))
+                {
+                    error.ErrMsg = "服务端没有读取到GetAListByID数据模板，请联系管理员";
+                    return null;
+                }
+                string _msg;
+                List<AgentSearchModel> aList;
+                aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out _msg);            
+                if (aList == null || aList.Count <= 0)
+                {
+                    error.ErrMsg = _msg;
+                    return null;
+                }
+                strSql = strSql.Replace("${AgentID}", model.A_ID);
+
+                error.ErrNo = "0000";
+                error.ErrMsg = "获取数据成功";
+
+                return CommonHelper.DataTableToJson(Db.Context_SqlServer.FromSql(strSql).ToDataTable());
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(LoginDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return null;
+            }
+        }
     }
 }

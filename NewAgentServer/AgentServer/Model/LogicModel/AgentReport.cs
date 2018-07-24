@@ -24,6 +24,10 @@ namespace Model.LogicModel
         /// </summary>
         public decimal A_GroupPrinc { get; set; }
         /// <summary>
+        /// H5会员余额和
+        /// </summary>
+        public decimal H5Balance { get; set; }
+        /// <summary>
         /// 总赢
         /// </summary>
         public decimal A_WinSum { get; set; }
