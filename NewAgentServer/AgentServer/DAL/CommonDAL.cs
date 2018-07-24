@@ -350,7 +350,7 @@ namespace DAL
         /// </summary>
         /// <param name="aid"></param>
         /// <returns></returns>
-        public static string GetAid(string aid)
+        public static string GetAid(string aid,string type)
         {
             try
             {
@@ -359,7 +359,16 @@ namespace DAL
                 {
                     return null;
                 }
-                idSql = idSql.Replace("${AgentID}", aid);
+                string id = "";
+                if(type == "name")
+                {
+                    id = Db.Context_SqlServer.FromSql("select AgentID from T_Agent where LogName='" + aid + "'").ToScalar<string>();
+                }
+                else
+                {
+                    id = aid;
+                }
+                idSql = idSql.Replace("${AgentID}", id);
                 string idString = "";
                 List<string> idList = Db.Context_SqlServer.FromSql(idSql).ToList<string>();
                 if (idList != null && idList.Count > 0)
@@ -378,6 +387,65 @@ namespace DAL
                 throw;
             }
         }
+        /// <summary>
+        /// 根据制定代理ID或登录账号获取直属代理或直属会员ID组成的字符串
+        /// </summary>
+        /// <param name="name"> "id" =登录按照指定代理ID获取  "name" = 登录按指定代理登录账号获取 </param>
+        /// <param name="value">指定代理的ID或登录账号 </param>
+        /// <param name="retValue">"A" = 返回直属代理ID组成的字符串 "C" = 返回直属会员组成的字符串</param>
+        /// <returns></returns>
+        public static string GetClntOrAId(string name ,string value,string retValue)
+        {
+            string strSql = "";
+            if(string.IsNullOrEmpty(name) || string.IsNullOrEmpty(value) || string.IsNullOrEmpty(retValue))
+            {
+                return null;
+            }
+            try
+            {
+                List<string> idList = new List<string>();
+                switch (retValue)
+                {
+                    case "A":
+                        if (name == "id")
+                        {
+                            strSql = "select AgentID from T_Agent where ParentID ='" + value + "' and IsHide ='FALSE'";
+                        }
+                        else
+                        {
+                            strSql = "select a.AgentID from T_Agent a,T_Agent b where a.ParentID = b.AgentID and a.IsHide = 'FALSE' and b.LogName='" + value + "'";
+                        }
+                        break;
+                    case "C":
+                        if (name == "id")
+                        {
+                            strSql = "select ClientID from T_Client where IsHide = 'FALSE' and LEN(LogName)<>9 and  and  AgentID ='" + value + "'";
+                        }
+                        else
+                        {
+                            strSql = "select a.ClientID from T_Client a ,T_Agent b where a.IsHide='FALSE' and a.AgentID = b.AgentID  and LEN(a.LogName) <> 9 and b.LogName='" + value + "'";
+                        }
+                        break;
+                }
+                idList = Db.Context_SqlServer.FromSql(strSql).ToList<string>();
+                if (idList == null || idList.Count <= 0)
+                {
+                    return null;
+                }
+                for (int i = 0; i < idList.Count; i++)
+                {
+                    idList[i] = "'" + idList[i] + "'";
+                }
+                return string.Join(",", idList);
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(CommonDAL), ex);
+                throw;
+            }
+        }
+
+
     }
 }
 

@@ -218,7 +218,12 @@ namespace DAL.LogicDAL
                 {
                     clnt = ClientListDAL.First(c => c.LogName == model.C_UserID);
                     aList = CommonDAL.GetAgentTree(head.LoginID, "id", clnt != null ? clnt.AgentID : "", out msg);
-                    model.C_ID = clnt != null ? clnt.ClientID : "";
+                    if(clnt == null)
+                    {
+                        error.ErrMsg = "没有找到此会员";
+                        return null;
+                    }
+                    model.C_ID = clnt.ClientID;
                 }
                 else
                 {
@@ -230,8 +235,8 @@ namespace DAL.LogicDAL
                     error.ErrMsg = msg;
                     return null;
                 }
-                strSql = strSql.Replace("${ClientID}", model.A_ID);
-                countSql = countSql.Replace("${ClientID}", model.A_ID);
+                strSql = strSql.Replace("${ClientID}", model.C_ID);
+                countSql = countSql.Replace("${ClientID}", model.C_ID);
                 error.ErrMsg = "获取数据成功";
                 error.ErrNo = "0000";
                 return JSON.ToJSON(new
@@ -268,8 +273,8 @@ namespace DAL.LogicDAL
             {
                 string today = string.Format("{0:yyyy-MM-dd}", DateTime.Today);
                 string whereSql = string.Empty;
-                string strSql = Common.SqlTemplateCommon.GetSql("A_GetAllT_ClientDetailsPage_New");
-                string countSql = Common.SqlTemplateCommon.GetSql("A_GetBillCount_New");
+                string strSql = Common.SqlTemplateCommon.GetSql("A_QueryPointPage");
+                string countSql = Common.SqlTemplateCommon.GetSql("A_GetPointCount");
                 string sumSql = Common.SqlTemplateCommon.GetSql("A_QueryPoint");
                 if (string.IsNullOrEmpty(strSql) || string.IsNullOrEmpty(countSql) || string.IsNullOrEmpty(sumSql))
                 {
@@ -286,11 +291,12 @@ namespace DAL.LogicDAL
                 T_Client clnt = new T_Client();
                 string idString = "";
                 string msg = "没有权限获取数据";
-                if (!string.IsNullOrEmpty(model.C_ID))
+                string strRange = "";
+                if (!string.IsNullOrEmpty(model.C_ID))//按会员ID过滤上下分数据
                 {
-                    clnt = ClientListDAL.First(c => c.ClientID == model.C_ID);
+                    clnt = ClientListDAL.First(c => c.ClientID == model.C_ID);//按会员登录账号过滤上下分数据
                     aList = CommonDAL.GetAgentTree(head.LoginID, "id", clnt.AgentID, out msg);
-                    whereSql += " and SourceID = '" + model.C_ID + "' or TargetID ='" + model.C_ID + "'";
+                    whereSql += " and (SourceID = '" + model.C_ID + "' or TargetID ='" + model.C_ID + "')";
                 }
                 else if (!string.IsNullOrEmpty(model.C_UserID))
                 {
@@ -305,31 +311,116 @@ namespace DAL.LogicDAL
                     }
                     whereSql += " and (TargetLogName='" + model.C_UserID + "' or SourceLogName='" + model.C_UserID + "')";
                 }
-                else if (!string.IsNullOrEmpty(model.A_ID))
+                else if (!string.IsNullOrEmpty(model.A_ID))//按代理ID过滤上下分数据
                 {
-                    idString = CommonDAL.GetAid(model.A_ID);
-                    if (string.IsNullOrEmpty(idString))
+                    aList = CommonDAL.GetAgentTree(head.LoginID, "id", model.A_ID, out msg);
+                    if (!string.IsNullOrEmpty(model.PointRange))
                     {
-                        error.ErrMsg = "没有找到此用户";
-                        return null;
+                        switch (model.PointRange)
+                        {
+                            case "OwnA"://直属代理
+                                idString = CommonDAL.GetClntOrAId("id", model.A_ID, "A");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            case "OwnC"://直属会员
+                                idString = CommonDAL.GetClntOrAId("id", model.A_ID, "C");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            case "All"://代理整个分支
+                                idString = CommonDAL.GetAid(model.A_ID,"id");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            default://代理本身
+                                whereSql += " and (SourceID = '" + model.A_ID + "' or TargetID ='" + model.A_ID + "')";//默认情况下查询代理本身的上下分数据
+                                break;
+                        }
                     }
                     else
                     {
-                        whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ") or CreateID in (" + idString + ")) ";
+                        whereSql += " and (SourceID = '" + model.A_ID + "' or TargetID ='" + model.A_ID + "')";//默认情况下查询代理本身的上下分数据
+                    }
+                    
+                }
+                else if(!string.IsNullOrEmpty(model.A_UserID))//按代理登录账号过滤上下分数据
+                {
+                    aList = CommonDAL.GetAgentTree(head.LoginID, "name", model.A_UserID, out msg);
+                    if (!string.IsNullOrEmpty(model.PointRange))
+                    {
+                        switch (model.PointRange)
+                        {
+                            case "OwnA"://直属代理
+                                idString = CommonDAL.GetClntOrAId("name", model.A_UserID, "A");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            case "OwnC"://直属会员
+                                idString = CommonDAL.GetClntOrAId("name", model.A_UserID, "C");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            case "All"://代理整个分支
+                                idString = CommonDAL.GetAid(model.A_UserID,"name");
+                                if (string.IsNullOrEmpty(idString))
+                                {
+                                    error.ErrMsg = "没有找到此用户";
+                                    return null;
+                                }
+                                else
+                                {
+                                    whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ")) ";
+                                }
+                                break;
+                            default://代理本身
+                                whereSql += " and (SourceID = '" + model.A_ID + "' or TargetID ='" + model.A_ID + "')";//默认情况下查询代理本身的上下分数据
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        whereSql += " and (SourceID = '" + model.A_ID + "' or TargetID ='" + model.A_ID + "')";//默认情况下查询代理本身的上下分数据
                     }
                 }
-                else
+                else//按登录代理ID过滤上下分数据
                 {
-                    idString = CommonDAL.GetAid(head.LoginID);
-                    if (string.IsNullOrEmpty(idString))
-                    {
-                        error.ErrMsg = "没有找到此用户";
-                        return null;
-                    }
-                    else
-                    {
-                        whereSql += " and (SourceID   in (" + idString + ") or TargetID in (" + idString + ") or CreateID in (" + idString + ")) ";
-                    }
+                    strRange += " and (SourceID = '" + head.LoginID + "' or TargetID ='" + head.LoginID + "')";
                 }
                 if (model.IsAll == false)//是否要过滤掉上下分金额为0的上下分记录
                 {
@@ -338,6 +429,24 @@ namespace DAL.LogicDAL
                 if (model.Minum != null)//是否需要以最小上下分金额进行过滤
                 {
                     whereSql += " and Delta >" + model.Minum;
+                }
+                if(!string.IsNullOrEmpty(model.PointType))//BD ="上分" XD="下分" QL ="清零" QK ="清卡"
+                {
+                    whereSql += " and OperationType ='" + model.PointType + "'";
+                }
+                if(!string.IsNullOrEmpty(model.PointWay))
+                {
+                    string borrowID = Db.Context_SqlServer.FromSql("select value from T_Cfg where name ='H5_BorrowerID'").ToScalar<string>();
+                    string lenderID = Db.Context_SqlServer.FromSql("select value from T_Cfg where name ='H5_LenderID'").ToScalar<string>();
+                    switch(model.PointWay)
+                    {
+                        case "Third"://第三方上下分
+                            whereSql += " and (SourceID = '" + borrowID + "' or SourceID = '" + lenderID + "')";
+                            break;
+                        case "Other"://非第三方上下分
+                            whereSql += " and SourceID <> '" + borrowID + "' and SourceID <> '" + lenderID + "'";
+                            break;
+                    }
                 }
                 if (aList == null || aList.Count <= 0)//判断当前查询的用户是否在登录代理分支下
                 {

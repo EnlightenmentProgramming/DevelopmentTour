@@ -5,7 +5,7 @@
 > 3. 使用了Dos.ORM框架与SQL Server交互 
 > 4. 使用了SQLite存储了服务通信IP与端口等基本配置
 > 5. 本服务使用websocket进行通信，报文数据格式为JSON
-> 6. 最后使用了RSA对配置文件"ConnetionString节点"进行加密 
+> 6. 生产环境中使用了RSA对配置文件"ConnetionString节点"进行加密 
 > 7. 使用Windows窗体应用程序简单的进行服务程序监管与设置 
 
 ## 具体接口及必要逻辑说明如下
@@ -814,7 +814,7 @@
               A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -1729,7 +1729,7 @@
            	A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -2737,8 +2737,8 @@
               A_ID:"代理ID",
               A_UserID:"代理登录名称",
               GameT:"游戏类型",//"百家乐" "龙虎" 默认是两种类型一起查
-              EndDate:"结束时间",
-              StartDate:"开始时间",
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              StartDate:"开始时间",//"yyyy-MM-dd"
               PageSize:"每页数据条数",
               CurePage:"当前页"
           }
@@ -2784,7 +2784,7 @@
            	A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -2850,8 +2850,8 @@
               A_ID:"代理ID",
               A_UserID:"代理登录名称",
               GameT:"游戏类型",//"百家乐" "龙虎" 默认是两种类型一起查
-              EndDate:"结束时间",
-              StartDate:"开始时间",
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              StartDate:"开始时间",//"yyyy-MM-dd"
               PageSize:"每页数据条数",
               CurePage:"当前页"
           }
@@ -2901,7 +2901,7 @@
            	A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -3029,8 +3029,8 @@
               A_ID:"代理ID",
               C_UserID:"会员登录名称",
               GameT:"游戏类型",//"百家乐" "龙虎" 默认是两种类型一起查
-              EndDate:"结束时间",
-              StartDate:"开始时间",
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              StartDate:"开始时间",//"yyyy-MM-dd"
               PageSize:"每页数据条数",
               CurePage:"当前页"
           }
@@ -3076,7 +3076,7 @@
            	A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -3165,6 +3165,7 @@
               C_Name:"会员名称",
               C_TotalWin:"总赢",
               C_WashF:"洗码费",
+              C_CreDate:"时间",
               C_LoseWin:"会员输赢",
               C_BetS:"总下注",
               C_BetSAct:"实际下注",
@@ -3174,19 +3175,112 @@
               C_Balnc:"可用余额",
               C_WashR:"洗码率",
               C_DrawR:"和局率",
-              C_TipSum:"C_TipSum",
+              C_TipSum:"小费",
               C_DrawS:"和局量",
               C_DrawF:"和具费",
               C_WashS_Z:"庄洗码",
               C_WashR:"洗码率",
-              C_DrawR:"和局率"
+              C_DrawR:"和局率",
+          },......],       
+          Count:"总记录数"
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+#### 43. 下注明细查询
+
+* 接口名称:GetClntBetBills
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetClntBetBills"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              C_ID:"会员ID",
+              C_UserID:"会员登录账号",
+              GameT:"游戏类型",//"百家乐" "龙虎" 默认是两种类型一起查
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              StartDate:"开始时间",//"yyyy-MM-dd"
+              PageSize:"每页数据条数",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetClntBetBills"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              B_ID:"注单号",
+              G_ID:"游戏ID",
+              T_Name:"桌台名称",
+              T_Ju:"局",
+              C_Kou:"口",
+              C_CreTime:"押码时间",
+              C_ResTime:"开牌时间",
+              C_ID:"会员ID",
+              C_UserID:"会员登录ID",
+              C_Name:"会员名称",
+              C_RMBalnc:"可用余额",
+              C_TotalWin:"总赢",
+              C_WashF:"洗码费",
+              C_GameR:"游戏结果",
+              C_BZ:"庄下注/虎",
+              C_BX:"闲下注/龙",
+              C_BH:"和下注",
+              C_BZD:"庄对下注",
+              C_BXD:"闲对下注",
+              C_GameT:"游戏类型",
+              C_BetS:"总下注",
+              C_BetSAct:"实际下注",         
+              C_WashR:"洗码率",
+              C_WashS:"洗码量",
+              C_WashT:"洗码类型",
+              C_TipSum:"C_TipSum",
+              C_DrawS:"和局量",
+              C_WashS_Z:"C_WashS_Z",         
+              U_IP:"IP",
+              U_Addr:"地址",
+              C_Balnc_B:"下注前余额",
+              C_DrawR:"和局率",         
+              C_DrawF:"和局费",
+              U_Memo:"备注",
           },......],
           AgentNav:
            [{
            	A_ID:"代理ID",
               A_UserID:"代理登陆名称",
               A_PID:"父级代理ID",
-              A_Name:"代理名称
+              A_Name:"代理名称",
               A_MX_Z:"最大限红",
               A_MN_Z:"最小限红",
               A_Prncpl:"可用余额",
@@ -3194,20 +3288,118 @@
               A_IntoR:"占成",
               A_Perm:"抽水配分权限",
            },......],
-          AgentSum://合计数据
+          Count:"总记录数"
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明:
+
+  >1. 首先会判断是否有会员登录账号(C_UserID)参数，如果有则优先以此参数进行过滤，如果没有则以会员ID(C_ID)进行过滤
+
+#### 44. 获取指定代理或会员上下分明细
+
+* 接口名称:GetPointDetail
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetPointDetail"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              C_ID:"会员ID",
+              A_ID:"代理ID",
+              C_UserID:"会员登录账号",
+              A_UserID:"代理登录账号",
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              StartDate:"开始时间",//"yyyy-MM-dd"
+              PageSize:"每页数据条数",
+              CurePage:"当前页",
+              PointWay:"上下分方式",
+              PointType:"分类过滤上分/下分/清卡/清零",
+              PointRange:"按范围过滤上下分数据",
+              IsAll:"false",//过滤掉上下分金额为0的记录
+              Minum:"按最小上下分金额过滤",
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetPointDetail"
+      },
+      Response:
+      {
+          JsonData:
           [{
-              TotalRecords:"总记录数",
-              C_BetS_T:"总下注",
-              C_BetActS_T:"实际下注",
-              C_DrawF_T:"和局费",
-              C_DrawS_T:"和局量",
-              C_TotalWin_T:"总赢",
-              C_LoseWin_T:"C_LoseWin_T",
-              C_WashF_T:"洗码费",
-              C_Wash_Z_T:"庄洗码",
-              C_WashS_T:"洗码量",
-              C_Charge_T:"上分",
-              C_Cash_T:"下分"
+              P_ID:"上下分ID",
+              C_CreID:"操作员ID",
+              C_CreTime:"时间",
+              C_Delta:"分数",
+              C_SID:"源ID",
+              C_SPrncpl_B:"源操作前余额",
+              C_SPrncpl_E:"源操作后余额",
+              C_TID:"目标ID",
+              C_Tbalnc_B:"目标操作前余额",//目标是会员
+              C_Tbalnc_E:"目标操作后余额",
+              C_OpTYpe:"操作类型",//上分-下分-清零
+              C_TPrncpl_B:"目标操作前余额",//目标是代理
+              C_TPrncpl_E:"目标操作后余额",
+              U_IP:"IP",
+              U_Addr:"地址",
+              U_IPLocal:"U_IPLocal",
+              C_SUserID:"源登录ID",
+              C_SName:"源名称",
+              C_TUserID:"目标登录ID",
+              C_TName:"目标名称",
+              C_Type:"目标类型",//会员--代理
+              U_Memo:"备注",
+          },......],
+          AgentNav:
+           [{
+           	A_ID:"代理ID",
+              A_UserID:"代理登陆名称",
+              A_PID:"父级代理ID",
+              A_Name:"代理名称",
+              A_MX_Z:"最大限红",
+              A_MN_Z:"最小限红",
+              A_Prncpl:"可用余额",
+              A_WashR:"洗码率",
+              A_IntoR:"占成",
+              A_Perm:"抽水配分权限",
+           },......],
+          PointSum:
+          [{
+           	TotalRecords:"总记录数",
+              C_Charge_T:"上分合计",
+              C_Cash_T:"下分合计",
+              C_Zero_T:"清零合计",
+              C_ClearCa_T:"清卡合计",
+              C_SumDelta:"上下分总店数"
           }],
           Count:"总记录数"
       }
@@ -3219,5 +3411,1166 @@
   }
   ```
 
-  
+* 接口说明
 
+  > 1. 如果参数会员ID(C_ID)不为空，此时判断此会员是否在登录代理分支下，如果在则过滤此会员上下分数据，如果不在则中断查询
+  >
+  > 2. 如果参数会员登录账号(C_UserID)不为空，此时判断此会员是否在登录代理分支下，如果在则过滤此会员上下分数据，如果不在则中断查询
+  >
+  > 3. 如果参数代理ID(A_ID)不为空，此时判断此代理是否在登录代理分支下，如果不在则中断查询，如果在则判断上下分范围参数(PointRange)是否为空，如果为空则过滤代理本身上下分数据，如果不为空则按以下情况分类处理
+  >
+  >    > * OwnA: 过滤此代理的直属代理上下分数据
+  >    > * OwnC: 过滤此代理的直属会员上下分数据
+  >    > * All: 过滤此代理分支所有的上下分数据
+  >    > * Self和其他标记: 过滤此代理本身上下分数据
+  >
+  > 4. 如果参数代理登录账号(A_UserID)不为空，此时判断此代理是否在登录代理分支下，如果不在则中断查询，如果在则判断上下分范围参数(PointRange)是否为空，如果为空则过滤代理本身上下分数据，如果不为空则按以下情况分类处理
+  >
+  >    > * OwnA: 过滤此代理的直属代理上下分数据
+  >    > * OwnC: 过滤此代理的直属会员上下分数据
+  >    > * All: 过滤此代理分支所有的上下分数据
+  >    > * Self和其他标记: 过滤此代理本身上下分数据
+  >
+  > 5. 对参数(C_ID/C_UserID/A_ID/A_UserID)的判断是相互排斥的，并且优先级从高到底按以上步骤1~4，比如参数C_ID不为空则不会对后面的3个参数进行判断，如果以上4个参数都为空，则会按Head报文中的LoginID过滤出登录代理本身的上下分数据
+  >
+  > 6. 参数IsAll=false 时，过滤掉上下分金额为0的上下分记录，如果IsAll等于其他值则不会不过掉上下分点数为0的记录
+  >
+  > 7. 如果参数Minum不为空，则过滤出上下分点数大于Minum的记录
+  >
+  > 8. 参数PointType如果不为空则按以下方式进行判断
+  >
+  >    > * "BD": 查询上分记录
+  >    > * "XD": 查询下分记录
+  >    > * "QL": 查询清零记录
+  >    > * "QK": 查询清卡记录
+  >
+  > 9. 参数PointWay如果不为空则按以下方式处理
+  >
+  >    > * "Third": 查询第三方上下分记录
+  >    > * "Other": 查询非第三方上下分记录
+  >    > * "All"和其他: 查询所有上下分记录
+  >
+
+#### 45. 获取游戏结果
+
+* 接口名称:GetTableResult
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetTableResult"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              T_ID:"桌台ID",
+              T_Ju:"局数",
+              StartDate:"时间",//"yyyy-MM-dd"
+              PageSize:"每页数据条数",
+              CurePage:"当前页",
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetTableResult"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              T_ID:"桌台ID",
+              T_Name:"桌台名称",
+              T_GameT:"游戏类型",      
+              T_JU:"局",
+              T_Kou:"口",
+              T_State:"状态",
+              T_CDTime_B:"倒计时开始时间",
+              T_CDTime_E:"倒计时结束时间",
+              T_GameR:"游戏结果",
+              T_ResTime:"结果录入时间",
+              T_RID:"T_RID",
+              U_Memo:"备注",
+              T_SDay:"T_SDay",        
+          },......],
+          TableJson:
+           [{
+           	T_ID:"桌台ID",
+              T_Name:"桌台名称",
+              T_MX_Z:"庄最大限红",      
+              T_MN_Z:"庄最小限红",
+              T_MX_X:"闲最大限红",
+              T_MN_X:"闲最小限红",
+              T_MX_H:"和最大限红",
+              T_MN_H:"和最小限红",
+              T_MX_ZD:"庄对最大限红",
+              T_MN_ZD:"庄对最小限红",
+              T_MX_XD:"闲对最大限红",
+              T_MN_XD:"闲对最小限红",
+           },......],
+          JuJson:
+          [{
+           	T_Ju:"局"
+          }],
+          Count:"总记录数"
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明
+
+  > 1. 如果没有传T_Ju时，会默认去Table中的第一局
+
+#### 46. 获取指定代理下的会员推广统计数据 增量
+
+* 接口名称: PromotionA_Clnt4A
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"PromotionA_Clnt4A"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"代理ID",
+              C_UserID:"代理/会员登录账号",
+              StartDate:"开始时间",//"yyyy-MM-dd"
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              PageSize:"每页数据条数",
+              CurePage:"当前页",
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"PromotionA_Clnt4A"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"会员ID",
+              C_Name:"会员名称",
+              C_UserID:"会员登陆名称",
+              C_Type:"用户类型",//SelfA（代理本身）OwnA(直属代理) OwnC(直属会员)
+              C_InID:"邀请人ID",
+              C_InUserID:"邀请人登陆名称",
+              C_InT:"邀请人类型",
+              C_AID:"所属代理ID",
+              C_ProA:"推广量",
+              C_ProA_T:"总推广量",
+              C_TotalWin:"推广会员总赢",
+              C_WashS:"推广会员洗码量",
+              C_WashF:"推广会员洗码费",
+              C_BetS:"推广会员总下注量",
+              C_BetActS:"推广会员实际下注量",
+              C_3BaoA:"推广会员三宝费",
+              C_Charge:"推广会员总上分",
+              C_Cash:"推广会员总下分",
+              C_TotalWin_Self:"会员本身总赢",
+              C_WashS_Self:"会员本身洗码量",
+              C_WashF_Self:"会员本身洗码费",
+              C_BetS_Self:"会员本身总下注量",
+              C_BetActS_Self:"会员本身实际下注量",
+              C_3BaoA_Self:"会员本身三宝费",
+              C_Charge_Self:"会员本身总上分",
+              C_Cash_Self:"会员本身总下分",
+              C_CreTime:"会员创建时间",
+              TotalRecords:"总记录数"
+          },......],
+          Promotion_A:
+           [{
+           	A_ID:"代理ID",
+              A_Name:"代理名称",
+              A_UserID:"代理登陆名称",
+              A_Type:"当前用户类型",//SelfA（代理本身）OwnA(直属代理) OwnC(直属会员)
+              P_ID:"所属代理ID",
+              A_ProA_T:"推广量",
+              A_ProA:"总推广量",
+              A_TotalWin:"代理总赢",
+              A_WashS:"代理洗码量",
+              A_WashF:"代理洗码费",
+              A_BetS:"总下注量",
+              A_BetActS:"实际下注量",
+              A_3BaoA:"三宝费",
+              A_Charge:"总上分",
+              A_Cash:"总下分",
+              A_TotalWin_Self:"代理本身总赢",
+              A_WashS_Self:"代理本身洗码量",
+              A_WashF_Self:"代理本身洗码费",
+              A_BetS_Self:"本身总下注量",
+              A_BetActS_Self:"本身实际下注量",
+              A_3BaoA_Self:"本身三宝费",
+              A_Charge_Self:"本身总上分",
+              A_Cash_Self:"本身总下分",
+              A_CreTime:"创建时间"  
+           }],
+          AgentNav:
+          [{
+           	A_ID:"代理ID",
+              A_UserID:"代理登陆名称",
+              A_PID:"父级代理ID",
+              A_Name:"代理名称",
+              A_MX_Z:"最大限红",
+              A_MN_Z:"最小限红",
+              A_Prncpl:"可用余额",
+              A_WashR:"洗码率",
+              A_IntoR:"占成",
+              A_Perm:"抽水配分权限",
+          },......]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明:
+
+  > 1. 如果参数代理/会员登录名称不为空，则判断当前查询的代理或会员是否在登录代理分支下，如果不在则中断查询，如果在则过滤出代理或会员的增量推广数据
+  > 2. 如果登录名称为空，则判断代理ID是否在登录代理分支下，如果不在则中断查询，如果在则过滤出代理的增量推广数据
+
+#### 47. 获取指定代理下的会员推广统计数据 存量
+
+- 接口名称: PromotionA_AllClnt4A
+
+- 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"PromotionA_AllClnt4A"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"代理ID",
+              C_UserID:"代理/会员登录账号",
+              StartDate:"开始时间",//"yyyy-MM-dd"
+              EndDate:"结束时间",//"yyyy-MM-dd"
+              PageSize:"每页数据条数",
+              CurePage:"当前页",
+          }
+      }   
+  }
+  ```
+
+- 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"PromotionA_AllClnt4A"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"会员ID",
+              C_Name:"会员名称",
+              C_UserID:"会员登陆名称",
+              C_Type:"用户类型",//SelfA（代理本身）OwnA(直属代理) OwnC(直属会员)
+              C_InID:"邀请人ID",
+              C_InUserID:"邀请人登陆名称",
+              C_InT:"邀请人类型",
+              C_AID:"所属代理ID",
+              C_ProA:"推广量",
+              C_ProA_T:"总推广量",
+              C_TotalWin:"推广会员总赢",
+              C_WashS:"推广会员洗码量",
+              C_WashF:"推广会员洗码费",
+              C_BetS:"推广会员总下注量",
+              C_BetActS:"推广会员实际下注量",
+              C_3BaoA:"推广会员三宝费",
+              C_Charge:"推广会员总上分",
+              C_Cash:"推广会员总下分",
+              C_TotalWin_Self:"会员本身总赢",
+              C_WashS_Self:"会员本身洗码量",
+              C_WashF_Self:"会员本身洗码费",
+              C_BetS_Self:"会员本身总下注量",
+              C_BetActS_Self:"会员本身实际下注量",
+              C_3BaoA_Self:"会员本身三宝费",
+              C_Charge_Self:"会员本身总上分",
+              C_Cash_Self:"会员本身总下分",
+              C_CreTime:"会员创建时间",
+              TotalRecords:"总记录数"
+          },......],
+          Promotion_A:
+           [{
+           	A_ID:"代理ID",
+              A_Name:"代理名称",
+              A_UserID:"代理登陆名称",
+              A_Type:"当前用户类型",//SelfA（代理本身）OwnA(直属代理) OwnC(直属会员)
+              P_ID:"所属代理ID",
+              A_ProA_T:"推广量",
+              A_ProA:"总推广量",
+              A_TotalWin:"代理总赢",
+              A_WashS:"代理洗码量",
+              A_WashF:"代理洗码费",
+              A_BetS:"总下注量",
+              A_BetActS:"实际下注量",
+              A_3BaoA:"三宝费",
+              A_Charge:"总上分",
+              A_Cash:"总下分",
+              A_TotalWin_Self:"代理本身总赢",
+              A_WashS_Self:"代理本身洗码量",
+              A_WashF_Self:"代理本身洗码费",
+              A_BetS_Self:"本身总下注量",
+              A_BetActS_Self:"本身实际下注量",
+              A_3BaoA_Self:"本身三宝费",
+              A_Charge_Self:"本身总上分",
+              A_Cash_Self:"本身总下分",
+              A_CreTime:"创建时间"  
+           }],
+          AgentNav:
+          [{
+           	A_ID:"代理ID",
+              A_UserID:"代理登陆名称",
+              A_PID:"父级代理ID",
+              A_Name:"代理名称",
+              A_MX_Z:"最大限红",
+              A_MN_Z:"最小限红",
+              A_Prncpl:"可用余额",
+              A_WashR:"洗码率",
+              A_IntoR:"占成",
+              A_Perm:"抽水配分权限",
+          },......]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+- 接口说明:
+
+  > 1. 如果参数代理/会员登录名称不为空，则判断当前查询的代理或会员是否在登录代理分支下，如果不在则中断查询，如果在则过滤出代理或会员的存量推广数据
+  > 2. 如果登录名称为空，则判断代理ID是否在登录代理分支下，如果不在则中断查询，如果在则过滤出代理的存量推广数据
+
+#### 48. H5会员第三方上分明细
+
+* 接口名称: H5ClntPointDetail
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"H5ClntPointDetail"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              C_ID:"会员ID",
+              C_UserID:"会员登录ID",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"H5ClntPointDetail"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"会员ID",
+              C_UserID:"会员登录ID",
+              C_Name:"会员名称",
+              Delta:"上分金额",
+              C_Balanc_B:"上分前余额",
+              C_Balanc_E:"上分后余额",
+              C_SrID:"分源ID",
+              C_SrUserID:"分源登录ID",
+              C_SrName:"分源名称",
+              C_SrBalanc_B:"分源操作前余额",
+              C_SrBalanc_E:"分源操作后余额",
+              C_CreTime:"上分时间",
+              TotalRecords:"总记录条数",
+          },......],
+          AgentPointSum:
+           [{
+           	Counts:"上分总次数",
+              SumMoney:"上分总金额",
+              StartDate:"第一笔上分时间",
+              EndDate:"最后一笔上分时间",
+              A_ID:"代理ID",
+              A_BorrowUserID:"代理登录ID",
+              A_BorrowName:"代理名称", 
+           }]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明
+
+  > 1. 获取指定H5会员的第三方上分明细
+
+#### 49. 获取指定代理下所有H5会员第三方上分明细
+
+* 接口名称: H5ClntPointSum_A
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"H5ClntPointSum_A"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"被操作代理ID",
+              A_UserID:"代理登录ID",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"H5ClntPointSum_A"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"会员ID",
+              C_UserID:"会员登录ID",
+              C_Name:"会员名称",
+              Delta:"上分金额",
+              C_Balanc_B:"上分前余额",
+              C_Balanc_E:"上分后余额",
+              C_SrID:"分源ID",
+              C_SrUserID:"分源登录ID",
+              C_SrName:"分源名称",
+              C_SrBalanc_B:"分源操作前余额",
+              C_SrBalanc_E:"分源操作后余额",
+              C_CreTime:"上分时间",
+              TotalRecords:"总记录条数",
+          },......],
+          AgentPointSum:
+           [{
+           	Counts:"上分总次数",
+              SumMoney:"上分总金额",
+              StartDate:"第一笔上分时间",
+              EndDate:"最后一笔上分时间",
+              A_ID:"代理ID",
+              A_BorrowUserID:"代理登录ID",
+              A_BorrowName:"代理名称", 
+           }]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明
+
+  > 1.如果查询代理不是系统配置的H5会员的管理代理或者系统配置的放分代理，则过滤出当前代理的H5会员第三方上分数据
+  >
+  > 2.如果登录账号是会员账号则会返回此会员第三方上分明细
+
+#### 50.指定代理下H5会员第三方上分合计接口
+
+* 接口名称: H5ClntPointSum
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"H5ClntPointSum"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"被操作代理ID",
+              A_UserID:"代理登录ID",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"H5ClntPointSum"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              Counts:"上分次数",
+              Delta:"上分金额",
+              C_ID:"会员ID",
+              C_UserID:"会员登录ID",
+              C_Name:"会员名称",
+              C_AID:"所属代理ID",
+              C_OwnerUserID:"所属代理登录ID",
+              C_OwnerName:"所属代理名称",
+              StartDate:"第一笔上分时间",
+              EndDate:"最后一笔上分时间",
+              TotalRecords:"总记录条数",
+          },......],
+          AgentPointSum:
+           [{
+           	Counts:"上分总次数",
+              SumMoney:"上分总金额",
+              StartDate:"第一笔上分时间",
+              EndDate:"最后一笔上分时间",
+              A_ID:"代理ID",
+              A_BorrowUserID:"代理登录ID",
+              A_BorrowName:"代理名称", 
+           }]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明
+
+  > 如果查询代理不是系统配置的H5会员的管理代理或者系统配置的放分代理，则过滤出当前代理的H5会员第三方上分数据
+
+#### 51. 查询指定代理自己及直属代理及直属会员下红包发放合计
+
+* 接口名称: RedEnvelopeSum
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"RedEnvelopeSum"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"被操作代理ID",
+              A_UserID:"代理登录ID",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"RedEnvelopeSum"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"主键ID",
+              C_Name:"名称",
+              C_UserID:"账号",
+              FirstTime:"首次红包时间",
+              LastTime:"尾次红包时间",
+              OpID:"OpID",
+              RedAmount:"红包总金额",
+              RedCounts:"发放红包总数",
+              InviterID:"InviterID",
+              RegCount:"成功激活红包数",
+              RebackAmount:"可回收红包金额",
+              TotalRecords:"总记录条数",
+          },......]        
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明
+
+  > 优先判断参数A_UserID是否为空
+
+#### 52. 查询指定会员下红包发送明细
+
+- 接口名称: RedEnvelopeDetail
+
+- 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"RedEnvelopeDetail"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              A_ID:"被操作代理ID",
+              A_UserID:"代理登录ID",
+              GameT:"红包状态",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+- 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"RedEnvelopeDetail"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ReID:"红包接收ID",
+              C_ReUserID:"接收账号",
+              C_ReName:"接收名称",
+              cFlag:"状态",
+              cCeateTime:"红包发放时间",
+              cPickupTime:"cPickupTime",
+              cRegTime:"激活时间",
+              cAboTime:"作废时间",
+              C_SendID:"红包发放ID",
+              C_SendUserID:"发放人登录ID",
+              C_SendName:"发放人名称",
+              C_TotalWin:"总赢",
+              TotalRecords:"总记录条数",
+          },......]        
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+- 接口说明
+
+  > 1.优先判断参数A_UserID是否为空
+  >
+  > 2.红包状态参数值可以以以下字符串以英文半角逗号分隔
+  >
+  > * "REG": 成功激活
+  > * "PICKUP"
+  > * "ABO"
+  > * "YES"
+  > * "UPD"
+
+#### 53.获取会员的洗码费统计
+
+* 接口名称: GetWashF4Clnt
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetWashF4Clnt"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              C_ID:"会员ID",
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetWashF4Clnt"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              C_ID:"会员ID",
+              C_Name:"会员名称",
+              C_UserID:"会员登录ID",      
+              C_LastWTime:"洗码费结算开始时间",
+              C_EndWTime:"洗码费结算结束时间",
+              C_Date:"操作时间",
+              C_WashR:"洗码率",
+              C_WashS:"洗码量",
+              C_WashF:"洗码费",
+              C_Count:"结算注单数量",
+          },......]        
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明:
+
+  > 1.会检查当前查询会员是否在登录代理分支下，如果不在则中断查询
+  >
+  > 2.此接口返回的数据集由以下部分组成
+  >
+  > - 2条之前的时间最近结算记录,如果此会员之前有结算的情况
+  > - 统计出此会员到当前为止可以结算的洗码费为一条记录
+
+#### 54. 获取结算日志
+
+* 接口名称: GetSettleAccounts
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetSettleAccounts"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              C_UserID:"结算源登录账号",
+              A_UserID:"操作员登录账号",
+              GameT:"结算类型",//结算洗码  结算抽水
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetSettleAccounts"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              A_ID:"主键ID",
+              A_Op:"操作员",
+              A_Source:"结算源",      
+              A_AObj:"结算目标",
+              A_Amount:"结算金额",
+              A_Count:"结算注单数量",
+              A_WashR:"洗码率",
+              A_Type:"结算类型",
+              A_WashS:"洗码量",
+              A_Start:"结算开始时间",
+              A_End:"结算结束时间",
+              A_Date:"操作时间",
+              A_State:"结算状态", 
+          },......],
+          SumJson:
+           [{
+              TotalRecords:"总记录数",
+              A_SumAmount:"结算金额",
+              A_WashS:"洗码量",
+           }],
+          Count:"总记录数"
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+#### 55.获取交易日志
+
+* 接口名称: GetTransactions
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetTransactions"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              L_Operator:"操作员登录账号",
+              L_SourceUser:"交易源登录账号/上级代理登录账号",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetTransactions"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              L_ID:"日志ID",
+              L_OpType:"交易类型",
+              L_OpReason:"交易原因",      
+              L_UserID:"交易目标登录ID",
+              L_UserName:"交易目标昵称",
+              L_TPoint:"交易金额",
+              L_SourceUser:"交易源登录ID",
+              L_SoureInto:"来源占成",
+              L_RealInto:"实际金额",
+              L_RealPoint:"实际分数",
+              L_TPoint_B:"交易前余额",
+              L_TPoint_E:"交易后余额",      
+              L_OpTime:"交易时间",
+              L_Operator:"操作员登录ID",
+              L_OpInfo:"交易详情",
+              L_IP:"IP",
+              L_Address:"地址",
+              L_Remark:"备注",
+              L_OperatorID:"操作员ID",
+          },......],
+          SumJson:
+           [{
+              L_TPoint:"交易金额合计",
+              L_RealInto:"实际金额合计",
+              L_RealPoint:"实际分数合计",
+           }]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+* 接口说明: 会检查当前操作员是否在登录代理分支下，如果不在则中断查询
+
+#### 56. 获取登录日志
+
+* 接口名称:GetLoginLog
+
+* 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetLoginLog"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              L_User:"登录账号",
+              L_PAgent:"上级代理登录账号",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+* 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetLoginLog"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              LogID:"日志ID",
+              L_ULevel:"用户级别",//代理-会员
+              L_PAgent:"父级代理登录ID",      
+              L_IP:"IP",
+              L_Addre:"地址",
+              L_Time:"登录时间",
+              L_ReMark:"备注",
+              L_User:"登录者登录ID",
+              TotalRecords:"总记录数",
+          },......]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+#### 57. 获取操作日志
+
+- 接口名称:GetOperationLog
+
+- 请求报文
+
+  ```json
+  {
+      Head:
+      {
+          Account:"登录账号",
+          LoginID:"登录ID",
+          Token:"登录认证",
+          Ip:"客户端IP",//如果有中转则需要提供此参数
+          Method:"GetTransactions"
+      },
+      Request:
+      {
+          IsZ:"应答报文是否需要Gzip压缩 默认是压缩的",
+          RType:"应答报文数据格式 默认是Json格式",
+          CFlag:"标记请求的客户端类型，根据特定的类型做特定的处理",//预留
+          CVer:"客户端版本号",
+          RequestParams:
+          {
+              L_OperatorID:"操作员ID",
+              StartDate:"查询开始时间", //时间格式 'yyyy-MM-dd HH:mm:ss'
+              EndDate:"查询结束时间",//时间格式 'yyyy-MM-dd HH:mm:ss'
+              PageSize:"每页显示几条数据",
+              CurePage:"当前页"
+          }
+      }   
+  }
+  ```
+
+- 应答报文
+
+  ```json
+  {
+    	Head:
+      {
+          Method:"GetLoginLog"
+      },
+      Response:
+      {
+          JsonData:
+          [{
+              LogID:"日志ID",
+              LogTime:"操作时间",
+              LogType:"操作类型",      
+              LogInfo:"操作描述",
+              OpID:"操作员ID",
+              TotalRecords:"总记录数",
+          },......]
+      }
+      Error://结果信息
+      {
+          ErrNo:"0000",//参见结果代码说明
+          ErrMsg:"成功"
+      }  
+  }
+  ```
+
+#### 

@@ -59,5 +59,19 @@ namespace Model.LogicModel
         public int? Minum { get; set; }
         public string T_ID { get; set; }
         public string T_Ju { get; set; }
+        /// <summary>
+        /// 上下分方式
+        /// All = 所有  Third = 第三方上下分  Ohter = 非第三方上下分
+        /// </summary>
+        public string PointWay { get; set; }
+        /// <summary>
+        /// BD = 上分 XD = 下分  QK = 清卡  QL = 清零
+        /// </summary>
+        public string PointType { get; set; }
+
+        /// <summary>
+        /// Self = 自己的上下分  OwnA = 查询代理直属代理的上下分  OwnC = 查询直属会员的上下分  All = 代理分支下的上下分（包含代理自己）
+        /// </summary>
+        public string PointRange { get; set; }
     }
 }
