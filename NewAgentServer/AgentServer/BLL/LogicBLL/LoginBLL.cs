@@ -62,6 +62,9 @@ namespace BLL.LogicBLL
                                         WsSocket ws = new WsSocket();
                                         ws.Send(JSON.ToJSON(outSend), kv.Value.cSocket, true);
                                         ws.closeConnect(kv.Value.cSocket);//断开之前的连接
+                                        ClientOP op;
+                                        WsSocket.dic_Clients.TryRemove(kv.Key, out op);//将连接移除字典
+                                        break;
                                     }
                                 }
                                 client.LogName = aSearch.A_UserID;
@@ -97,6 +100,50 @@ namespace BLL.LogicBLL
                 sendMsg.Head = JSON.ToJSON(sendHead);
                 sendMsg.Error = JSON.ToJSON(error);
                 sendMsg.Reponse = JSON.ToJSON(new {JsonData = (string.IsNullOrEmpty(responseMsg)) ? "{}" : responseMsg });
+                return JSON.ToJSON(sendMsg);
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(LoginBLL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                sendMsg.Head = JSON.ToJSON(sendHead);
+                sendMsg.Reponse = "{}";
+                sendMsg.Error = JSON.ToJSON(error);
+                return JSON.ToJSON(sendMsg);
+            }
+        }
+        /// <summary>
+        /// 登出
+        /// </summary>
+        /// <param name="requestMsg"></param>
+        /// <param name="head"></param>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        public string SignOut(string requestMsg,HeadMessage head)
+        {
+            sendHead.Method = head.Method ?? "";
+            error.ErrNo = "0004";
+            try
+            {
+                AgentSearchModel aSearch = JSON.ToObject<AgentSearchModel>(requestMsg);
+                if (aSearch == null || string.IsNullOrEmpty(aSearch.A_UserID))
+                {
+                    error.ErrMsg = "参数不完整";
+                    error.ErrNo = "0003";
+                }
+                foreach (KeyValuePair<string, ClientOP> kv in WsSocket.dic_Clients)
+                {
+                    if (kv.Value.LogName == aSearch.A_UserID)
+                    {
+                        error.ErrNo = "0000";
+                        error.ErrMsg = aSearch.A_UserID + "登出成功";
+                        ClientOP op;
+                        WsSocket.dic_Clients.TryRemove(kv.Key, out op);//将连接移除字典
+                        break;
+                    }
+                }
+                sendMsg.Head = JSON.ToJSON(sendHead);
+                sendMsg.Error = JSON.ToJSON(error);
                 return JSON.ToJSON(sendMsg);
             }
             catch (Exception ex)

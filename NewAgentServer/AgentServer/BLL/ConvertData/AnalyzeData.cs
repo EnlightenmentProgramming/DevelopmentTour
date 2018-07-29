@@ -95,6 +95,13 @@ namespace BLL.ConvertData
                                 error.ErrNo = "0000";
                                 error.ErrMsg = "连接正常";
                                 break;
+                            case "SignOut"://登出
+                                if (hasRequestParameters)
+                                {
+                                    isGoupRetMsg = false;
+                                    methodReturn = loginBll.SignOut(reqMsg.RequestParams, head, client);
+                                }
+                                break;
                             #region 登录部分
                             case "Login"://登录
                                 if (hasRequestParameters)
@@ -214,7 +221,7 @@ namespace BLL.ConvertData
                             case "RedEnvelopeSum"://查询指定代理自己及直属代理及直属会员下红包发放合计
                             case "RedEnvelopeDetail"://查询指定会员下红包发送明细
                             case "GetSettleAccounts"://获取结算记录
-                            case "GetWashF4Clnt"://获取会员的抽水洗码费统计
+                            case "GetWashF4Clnt"://获取会员的洗码费统计
                             case "GetOddsWashF4Agent"://获取代理抽水及洗码费统计
                                 if (hasRequestParameters && isLoginAuth)
                                 {
