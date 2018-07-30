@@ -99,7 +99,7 @@ namespace BLL.ConvertData
                                 if (hasRequestParameters)
                                 {
                                     isGoupRetMsg = false;
-                                    methodReturn = loginBll.SignOut(reqMsg.RequestParams, head, client);
+                                    methodReturn = loginBll.SignOut(reqMsg.RequestParams, head);
                                 }
                                 break;
                             #region 登录部分
@@ -148,6 +148,7 @@ namespace BLL.ConvertData
                             case "AgentClear"://代理清零
                             case "SettleOdds4Agent"://结算代理抽水
                             case "SettleWashF4Agent"://结算代理洗码费
+                            case "DeleteAgent"://删除代理
                                 if (hasRequestParameters && isLoginAuth)
                                 {
                                     isGoupRetMsg = false;

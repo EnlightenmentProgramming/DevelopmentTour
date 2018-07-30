@@ -129,6 +129,7 @@ namespace BLL.LogicBLL
                         case "SettleWashF4Agent":
                             insertRes = agentListDal.SettleWashF(aSearch, head, out error);
                             break;
+                        case "DeleteAgent":
                         default:
                             insertRes = false;
                             break;

@@ -586,17 +586,17 @@ namespace DAL.LogicDAL
                 {
                     if (aReport.A_ChouS > 0)
                     {
-                        error.ErrMsg = "修改配分权限之前请先结算抽水";
+                        error.ErrMsg = "请先结算抽水";
                         return false;
                     }
                     if (aReport.A_WashFee > 0)
                     {
-                        error.ErrMsg = "修改配分权限之前请先结算洗码费";
+                        error.ErrMsg = "请先结算洗码费";
                         return false;
                     }
                     if ((aReport.A_GroupPrinc - aReport.H5Balance)> 0)
                     {
-                        error.ErrMsg = "修改配分权限之前请先清零此代理";
+                        error.ErrMsg = "请先清零此代理";
                         return false;
                     }
                 }
@@ -1313,5 +1313,45 @@ namespace DAL.LogicDAL
                 }
             }
         }
+        /// <summary>
+        /// 删除代理
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="head"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public bool DeleteAgent(AgentSearchModel model, HeadMessage head, out ErrorMessage error)
+        {
+            error = new ErrorMessage();
+            error.ErrNo = "0004";
+            try
+            {
+                if (isUpMatchp(model.A_ID, out error))
+                {
+                    if (Db.Context_SqlServer.Update<T_Agent>(T_Agent._.IsHide, "TRUE", T_Agent._.AgentID == model.A_ID) > 0)
+                    {
+                        error.ErrMsg = "删除代理成功";
+                        error.ErrNo = "0000";
+                        return true;
+                    }
+                    else
+                    {
+                        error.ErrMsg = "删除代理失败";
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
+                error.ErrMsg = ex.Message.Replace("\r", "").Replace("\n", "");
+                return false;
+            }
+        }
+
     }
 }
