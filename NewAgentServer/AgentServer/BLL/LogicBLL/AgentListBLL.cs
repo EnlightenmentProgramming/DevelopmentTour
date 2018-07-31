@@ -130,6 +130,7 @@ namespace BLL.LogicBLL
                             insertRes = agentListDal.SettleWashF(aSearch, head, out error);
                             break;
                         case "DeleteAgent":
+
                         default:
                             insertRes = false;
                             break;
