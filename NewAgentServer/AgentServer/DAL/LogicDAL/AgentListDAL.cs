@@ -148,7 +148,21 @@ namespace DAL.LogicDAL
                     return false;
                 }
                 if (model.A_WashR != null && model.A_WashR > pAgent.A_WashR) model.A_WashR = pAgent.A_WashR;//如果新增代理的洗码率大于父级代理的洗码率则赋值为父级代理的洗码率
-                if (model.A_DrawR != null && model.A_DrawR > pAgent.A_DrawR) model.A_DrawR = pAgent.A_DrawR;//如果新增代理的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                if(pAgent.A_DrawR == 0)//如果父级代理的和局率为0 则他下面的代理的和局率只能为0 
+                {
+                    model.A_DrawR = 0;
+                }
+                else //如果父级代理的的和局率不为0 ，则他的下级代理和局率及直属会员的和局率也不能为0
+                {
+                    if(model.A_DrawR ==0)
+                    {
+                        model.A_DrawR = pAgent.A_DrawR;
+                    }
+                    else
+                    {
+                        if (model.A_DrawR != null && model.A_DrawR > pAgent.A_DrawR) model.A_DrawR = pAgent.A_DrawR;//如果新增代理的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                    }
+                }
                 if (model.A_IntoR != null && model.A_IntoR > pAgent.A_IntoR) model.A_IntoR = pAgent.A_IntoR;//如果新增代理的占成大于父级代理的占成则赋值为父级代理的占成
                 if (model.A_MX_Z != null && model.A_MX_Z > pAgent.A_MX_Z) model.A_MX_Z = pAgent.A_MX_Z;//如果新增代理的最大限红大于父级代理的最大限红则赋值为父级代理的最大限红
                 if (model.A_MN_Z != null && model.A_MN_Z < pAgent.A_MN_Z) model.A_MN_Z = pAgent.A_MN_Z;//如果新增代理的最小限红小于父级代理的最小限红则赋值为父级代理的最小限红
@@ -360,9 +374,24 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "下级代理有配分权限，请先取消下级代理的配分权限";
                     return false;
                 }
-                if (model.A_WashR != null && model.A_WashR > pAgent.A_WashR)
+                if(pAgent.A_DrawR == 0 && model.A_DrawR != 0)
+                {
+                    error.ErrMsg = "父级代理的和局率为0，所以被修改代理的和局率只能为0";
+                    return false;
+                }
+                if(pAgent.A_DrawR >0 && model.A_DrawR <=0)
+                {
+                    error.ErrMsg = "父级代理的和局率不为0，所以被修改代理的和局率不能为0";
+                }
+                if (model.A_WashR != null && pAgent.A_WashR != null && model.A_WashR > pAgent.A_WashR)
                 {
                     error.ErrMsg = "洗码率超出父级代理范围";
+                    return false;
+                }
+                decimal subMaxDrawR = GetSubMaxDrawR(model.A_ID);
+                if(model.A_DrawR != null && model.A_DrawR < subMaxDrawR)
+                {
+                    error.ErrMsg = "和局率不能低于直属代理或直属会员的和局率";
                     return false;
                 }
                 if (model.A_DrawR != null && model.A_DrawR > pAgent.A_DrawR)
@@ -1023,6 +1052,30 @@ namespace DAL.LogicDAL
             }
         }
         /// <summary>
+        /// 获取指定代理直属代理直属会员的最大和局率
+        /// </summary>
+        /// <param name="agentID"></param>
+        /// <returns></returns>
+        public decimal GetSubMaxDrawR(string agentID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(agentID))
+                {
+                    return 0;
+                }
+                string str = "select MAX(IntoRate) maxIntoR from T_Agent where ParentID ='" + agentID + "' ";
+                string clntStr = "select MAX(IntoRate) maxIntoR from T_Client where AgentID  ='" + agentID + "' ";
+                decimal aRate = Db.Context_SqlServer.FromSql(str).ToScalar<decimal?>() ?? 0, cRate = Db.Context_SqlServer.FromSql(clntStr).ToScalar<decimal?>() ?? 0;
+                return aRate > cRate ? aRate : cRate;
+            }
+            catch (Exception ex)
+            {
+                Common.LogHelper.WriteLog(typeof(AgentListDAL), ex);
+                throw;
+            }
+        }
+        /// <summary>
         /// 获取指定代理下级代理
         /// </summary>
         /// <param name="agentID"></param>
@@ -1146,7 +1199,8 @@ namespace DAL.LogicDAL
                     IsSubOdds = IsSubAOdds(model.A_ID),
                     PMacthP = PHasAnyMatchP(head.LoginID, model.A_ID),
                     HasSubAgent = GetSubAgent(model.A_ID),
-                    SubMaxIntoR = GetSubMaxIntoR(model.A_ID)
+                    SubMaxIntoR = GetSubMaxIntoR(model.A_ID),
+                    SubMaxDrawR = GetSubMaxDrawR(model.A_ID)
                 });
             }
             catch (Exception ex)

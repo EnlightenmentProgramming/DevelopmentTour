@@ -260,7 +260,21 @@ namespace DAL.LogicDAL
                     return false;
                 }
                 if (model.C_WashR != null && model.C_WashR > pAgent.WashRate) model.C_WashR = pAgent.WashRate;//如果新增会员的洗码率大于父级代理的洗码率则赋值为父级代理的洗码率
-                if (model.C_DrawR != null && model.C_DrawR > pAgent.DrawRate) model.C_DrawR = pAgent.DrawRate;//如果新增会员的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                if(pAgent.DrawRate == 0)//如果父级代理的和局率为0，则它的直属会员的和局率只能为0
+                {
+                    model.C_DrawR = 0;
+                }
+                else 
+                {
+                    if (pAgent.DrawRate > 0 && model.C_DrawR <= 0)
+                    {
+                        model.C_DrawR = pAgent.DrawRate;
+                    }
+                    else
+                    {
+                        if (model.C_DrawR != null && model.C_DrawR > pAgent.DrawRate) model.C_DrawR = pAgent.DrawRate;//如果新增会员的和局率大于父级代理的和局率则赋值为父级代理的和局率
+                    }
+                }                
                 if (model.C_MX_Z != null && model.C_MX_Z > pAgent.Max_Z) model.C_MX_Z = pAgent.Max_Z;//如果新增会员的最大限红大于父级代理的最大限红则赋值为父级代理的最大限红
                 if (model.C_MN_Z != null && model.C_MN_Z < pAgent.Min_Z) model.C_MN_Z = pAgent.Min_Z;//如果新增会员的最小限红小于父级代理的最小限红则赋值为父级代理的最小限红
 
@@ -588,11 +602,21 @@ namespace DAL.LogicDAL
                     error.ErrMsg = "洗码率超出父级代理范围";
                     return false;
                 }
+                if(pAgent.A_DrawR == 0 && model.C_DrawR != 0)
+                {
+                    error.ErrMsg = "父级代理的和局率为0，所以此会员的和局率只能为0";
+                    return false;
+                }
+                if(pAgent.A_DrawR >0 && model.C_DrawR <=0)
+                {
+                    error.ErrMsg = "父级代理的和局率不为0，所以此会员的和局率不能为0";
+                    return false;
+                }
                 if (model.C_DrawR != null && model.C_DrawR > pAgent.A_DrawR)
                 {
                     error.ErrMsg = "和局率超出父级代理范围";
                     return false;
-                }               
+                }                               
                 if (model.C_MX_Z != null && model.C_MX_Z > pAgent.A_MX_Z)
                 {
                     error.ErrMsg = "最大限红超出父级代理范围";
