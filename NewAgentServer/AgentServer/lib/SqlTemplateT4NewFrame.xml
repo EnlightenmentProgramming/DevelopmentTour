@@ -672,23 +672,34 @@
 			set @AgentID ='${AgentID}'
 
 			;WITH AgentCTE (AgentID, ParentID, Level, Principal )AS(
-					SELECT a.AgentID, a.ParentID, 0, a.Principal FROM T_Agent a where a .AgentID = @agentID
-					UNION ALL
-					SELECT a.AgentID, a.ParentID,  cte.Level+1,a.Principal FROM T_Agent a JOIN AgentCTE cte ON a .ParentID   = cte.AgentID
+				SELECT AgentID, ParentID, 0, Principal FROM T_Agent where AgentID = @agentID and IsHide = 'FALSE'
+				UNION ALL
+				SELECT a.AgentID, a.ParentID,  cte.Level+1,a.Principal FROM T_Agent a JOIN AgentCTE cte ON a .ParentID   = cte.AgentID
 				)
+			select * into #AID from AgentCTE 
 
 			select a.AgentID, a.ParentID, a.Level, cast(a.Principal as numeric(20,0)) Principal,
 				(select isnull(sum(cast(c.Balance  as numeric(20,0))) ,0) from t_client c where c.AgentID = a.AgentID) as Balance, 
-			CAST(0 as numeric(20,4)) as AvaialablePoint into #Agent from AgentCTE a;
+				(select isnull(sum(cast(c.Balance  as numeric(20,0))) ,0) from t_client c,T_WeiTou_Detail b where c.AgentID = a.AgentID and c.ClientID = b.ClientID) as H5Balance,
+				(select COUNT(*) from T_WeiTou_Detail b where b.InviterID = a.AgentID) A_Prom,
+				(select COUNT(*) from T_WeiTou_Detail b where b.AgentID3Bao = a.AgentID) A_PromT,
+				CAST(0 as numeric(20,4)) as AvaialablePoint into #Agent from #AID a;
 
+			--计算群组余额
 			DECLARE @Level int;
 			select @Level = max(Level) from #Agent;
 
 			while (@Level>=0) begin
 				update #Agent  set #Agent.AvaialablePoint = isnull(#Agent.Principal,0) + isnull(#Agent.Balance,0)  +
 					isnull((select sum(isnull(b.AvaialablePoint,0)) from #Agent b where b.ParentID = #Agent.AgentID ),0) where #Agent.level = @Level
+									
+				update #Agent  set #Agent.H5Balance = isnull(#Agent.H5Balance,0)  +
+					isnull((select sum(isnull(b.H5Balance,0)) from #Agent b where b.ParentID = #Agent.AgentID ),0) where #Agent.level = @Level
+
+				update #Agent  set #Agent.A_PromT = isnull(#Agent.A_PromT,0)  +
+					isnull((select sum(isnull(b.A_PromT,0)) from #Agent b where b.ParentID = #Agent.AgentID ),0) where #Agent.level = @Level
 				set @Level = @Level -1
-			end
+			end;
 
 			select 
 				 AgentID A_ID
@@ -980,6 +991,12 @@
 				,a.DrawRate A_DrawR
 				,a.IntoRate A_IntoR
 				,a.WashRate A_WashR
+				,a.WashType A_WashT
+				,a.State A_State
+				,a.CreateTime A_CreTime
+				,a.F_2 A_F2
+				,'0' A_Sub
+				,a.ParentID A_PID
 				,Max_Z A_MX_Z
 				,Max_ZD A_MX_ZD
 				,Max_X A_MX_X
@@ -1008,9 +1025,13 @@
 				,ISNULL(b.A_WashS_Z,0) A_WashS_Z
 				,(select COUNT(*) from T_Client where AgentID = @AgentID and IsHide = 'FALSE') A_ClntSum
 				,ISNULL((select AvaialablePoint from #Agent where AgentID = @AgentID),0) A_AblePoint
+				,ISNULL((select H5Balance from #Agent where AgentID = @AgentID),0) A_H5AbPoint
+				,ISNULL((select A_Prom from #Agent where AgentID = @AgentID),0) A_ProA
+				,ISNULL((select A_PromT from #Agent where AgentID = @AgentID),0) A_ProA_T
 				,ISNULL((select A_TotalOdds from #CTod_No),0) A_TotalOdds_No
 				,ISNULL((select WashF from #CTwf_No),0) A_WashF_No
 				,ISNULL((select WashS from #CTwf_No),0) A_WashS_No
+				,(select Count(*) from T_Agent where ParentID = a.AgentID and IsHide ='FALSE') A_SubCounts
 			from T_Agent a left join #sumFeeTemp b on a.AgentID = b.A_ID
 			where a.AgentID = @AgentID  
 
@@ -1138,7 +1159,7 @@
 				, CAST(0 as numeric(18,4)) A_WashF
 				, CAST(0 as numeric(18,4)) A_TotalFee
 				, CAST(0 as numeric(18,4)) A_CompanyFee
-				, CAST(0 as numeric(18,4)) A_DrawR
+				, DrawRate A_DrawR
 				, CAST(0 as numeric(18,4)) A_DrawF
 				, CAST(0 as numeric(18,4)) A_DrawS
 				, (select AvaialablePoint from #Agent where AgentID = ttt.AgentID) A_AblePoint -- 有效点数()
@@ -1157,7 +1178,7 @@
 				,(select H5Balance from #Agent where AgentID =ttt.AgentID) as A_H5AbPoint -- CAST(0 as numeric(20,4))
 			into #AT
 			from T_Agent ttt
-			where ttt.AgentID <> 'Root' and (ttt.AgentID = @AgentID or ttt.ParentID = @AgentID)
+			where ttt.AgentID <> 'Root' and ttt.IsHide = 'FALSE' and (ttt.AgentID = @AgentID or ttt.ParentID = @AgentID)
 			${WhereSql}
 
 			select @TotalRecords = count(*) from #AT
@@ -1239,7 +1260,7 @@
 			select 
 				COUNT(*)
 			from T_Agent 
-			where AgentID <> 'Root' and (AgentID = @AgentID or ParentID = @AgentID)
+			where AgentID <> 'Root' and IsHide = 'FALSE' and (AgentID = @AgentID or ParentID = @AgentID)
 			${WhereSql}
 		]]>
 	</sql>
@@ -2190,7 +2211,7 @@
 				,null C_ODZD
 				,null C_AUserID
 			into #CTemp
-			from T_Agent a where AgentID = @AgentID
+			from T_Agent a where AgentID = @AgentID and a.IsHide = 'FALSE'
 
 			union
 
@@ -3750,9 +3771,9 @@
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
 			into #AgentTemp
-			from T_BetBill_Wash_Archive a (nolock) left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill_Archive c (nolock) on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			from T_BetBill_Wash_Archive a (nolock), #CID b 
+			,T_BetBill_Archive c (nolock)  
+			where  a.AgentID = b.AgentID and a.BillID = c.BillID  and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate 
 
 			insert #AgentTemp
@@ -3778,9 +3799,9 @@
 				,SUM(BetSumAct) BetSumAct
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
-			from T_BetBill_Wash a left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill c on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate  ${InWhereSql}
+			from T_BetBill_Wash a , #CID b  
+			, T_BetBill c  
+			where a.AgentID = b.AgentID and  a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate
 
 			select 
@@ -3861,10 +3882,10 @@
 				,a.WashRate 
 				,a.IntoRate 
 			into #AgentTemp
-			from T_BetBill_Wash_Archive a (nolock) left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill_Archive c (nolock) on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate  ${InWhereSql}
-			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate
+			from T_BetBill_Wash_Archive a (nolock), #CID b 
+			,T_BetBill_Archive c (nolock)  
+			where  a.AgentID = b.AgentID and a.BillID = c.BillID  and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate 
 
 			insert #AgentTemp
 
@@ -3877,11 +3898,11 @@
 				,a.DrawRate 
 				,a.WashRate 
 				,a.IntoRate 
-			from T_BetBill_Wash a left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill c on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate  ${InWhereSql}
+			from T_BetBill_Wash a , #CID b  
+			, T_BetBill c  
+			where a.AgentID = b.AgentID and  a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate
-
+			
 			select 
 				AgentID A_ID
 				,AgentName A_Name
@@ -3953,10 +3974,10 @@
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
 			into #AgentTemp
-			from T_BetBill_Wash_Archive a (nolock) left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill_Archive c (nolock) on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate  ${InWhereSql}
-			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate
+			from T_BetBill_Wash_Archive a (nolock), #CID b 
+			,T_BetBill_Archive c (nolock)  
+			where  a.AgentID = b.AgentID and a.BillID = c.BillID  and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate 
 
 			insert #AgentTemp
 
@@ -3981,9 +4002,9 @@
 				,SUM(BetSumAct) BetSumAct
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
-			from T_BetBill_Wash a left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill c on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			from T_BetBill_Wash a , #CID b  
+			, T_BetBill c  
+			where a.AgentID = b.AgentID and  a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate
 
 			select 
@@ -4086,9 +4107,9 @@
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
 			into #AgentTemp
-			from T_BetBill_Wash_Archive a (nolock) left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill_Archive c (nolock) on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate 
+			from T_BetBill_Wash_Archive a (nolock) , #CID b  
+			, T_BetBill_Archive c (nolock)  
+			where a.AgentID = b.AgentID and a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate 
 			group by a.AgentID,a.AgentName,a.LogName,b.F_3,a.DrawRate,a.WashRate,a.IntoRate,StatisticsDay
 
 			insert #AgentTemp
@@ -4114,9 +4135,9 @@
 				,SUM(BetSumAct) BetSumAct
 				,SUM(TipSum) TipSum
 				,SUM(Wash_Z) Wash_Z
-			from T_BetBill_Wash a left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill c on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate 
+			from T_BetBill_Wash a , #CID b  
+			,T_BetBill c   
+			where a.AgentID = b.AgentID and a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate 
 			group by a.AgentID,a.AgentName,a.LogName,b.F_3,a.DrawRate,a.WashRate,a.IntoRate,StatisticsDay
 
 			select 
@@ -4220,9 +4241,9 @@
 				,a.IntoRate 
 				,StatisticsDay
 			into #AgentTemp
-			from T_BetBill_Wash_Archive a (nolock) left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill_Archive c (nolock) on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			from T_BetBill_Wash_Archive a (nolock) , #CID b  
+			, T_BetBill_Archive c (nolock)  
+			where a.AgentID = b.AgentID and a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate,StatisticsDay
 
 			insert #AgentTemp
@@ -4237,9 +4258,9 @@
 				,a.WashRate 
 				,a.IntoRate 
 				,StatisticsDay
-			from T_BetBill_Wash a left join #CID b on a.AgentID = b.AgentID
-			left join T_BetBill c on a.BillID = c.BillID 
-			where c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
+			from T_BetBill_Wash a , #CID b  
+			,T_BetBill c  
+			where a.AgentID = b.AgentID and a.BillID = c.BillID and c.State =N'#Pay' and c.StatisticsDay between @StartDate and @EndDate ${InWhereSql}
 			group by a.AgentID,a.AgentName,a.LogName,b.Principal,b.F_3,a.DrawRate,a.WashRate,a.IntoRate,StatisticsDay
 
 			select 
@@ -9606,7 +9627,7 @@
 				,COUNT(*) Counts
 				,SUM(ISNULL(a.WashSum,0)) WashSum
 				,SUM(ISNULL(a.WashFee,0)) WashFee
-			from T_BetBill_Wash a,T_BetBill b
+			from T_BetBill_Wash_Archive a,T_BetBill_Archive b 
 			where a.AgentID = @AgentID and (a.WashBillID is null or a.WashBillID='') and a.BillID =b.BillID 
 			and b.CreateTime <= @lastDayDate  and b.State ='#PAY'
 			group by WashRate
@@ -9707,6 +9728,11 @@
 			declare @SettleDate nvarchar(20)
 			declare @EndDate nvarchar(20)
 
+			set @AgentID = '${AgentID}' --'45afea0887644b56a743a7b897e988fd'--
+			set @SettleDate ='${SettleDate}'--'2018-03-19 15:29:50' --
+			set @BillID = '${BillID}'
+			set @EndDate = '${EndDate}'			
+			
 			-- 内部变量
 			declare @B nvarchar(20)
 
@@ -9719,11 +9745,6 @@
 			begin
 			   select @EndDate = convert(varchar(11),getdate()-1,120)+ value from t_cfg where name = 'Use_WORKTIME_START'  --前一天
 			end	
-
-			set @AgentID = '${AgentID}' --'45afea0887644b56a743a7b897e988fd'--
-			set @SettleDate ='${SettleDate}'--'2018-03-19 15:29:50' --
-			set @BillID = '${BillID}'
-			set @EndDate = '${EndDate}'
 			
 			update a set OddsBillID = @BillID
 			from T_BetBill_Wash a,T_BetBill b
