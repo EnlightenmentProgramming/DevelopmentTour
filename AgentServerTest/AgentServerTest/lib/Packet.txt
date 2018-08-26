@@ -1,0 +1,8 @@
+﻿$=>HeartBeat
+$->{FunName:"HeartBeat"}
+$<-
+
+$=>Login
+$->{FunName:"Login",JsonData:"{A_UserID:\"888999\",
+A_Password:\"202cb962ac59075b964b07152d234b70\"}"}
+$<-
