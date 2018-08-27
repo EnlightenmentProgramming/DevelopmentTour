@@ -16,7 +16,8 @@ namespace Common.Socket
         private const bool verbose = true;
         private static readonly TimeSpan delay = TimeSpan.FromMilliseconds(1000);
         static ClientWebSocket webSocket = null;
-
+        private static System.Diagnostics.Stopwatch countTime = new System.Diagnostics.Stopwatch();   //定义一个计时对象 
+        private static string interfaceName = string.Empty;   
         public static async Task Connect(string uri)
         {
             try
@@ -45,7 +46,7 @@ namespace Common.Socket
             }
         }
 
-        public static async Task Send(string msg)
+        public static async Task Send(string msg,string name)
         {
             //var random = new Random();
             //byte[] buffer = new byte[sendChunkSize];
@@ -60,12 +61,14 @@ namespace Common.Socket
 
             //    await Task.Delay(delay);
             //}
-
+            countTime.Start();
+            interfaceName = name;
             if (webSocket.State != WebSocketState.Open)
             {
                 throw new Exception("Connection is not open.");
             }
             Console.WriteLine("\r\n   "+"->：["+msg+"]");
+            FileHelper.WriteLog("\r\n \r\n   " + "->：[" + msg + "]");
             var messageBuffer = Encoding.UTF8.GetBytes(Common.ZipHelper.GZipCompressString(msg));
             var messagesCount = (int)Math.Ceiling((double)messageBuffer.Length / sendChunkSize);
 
@@ -80,8 +83,16 @@ namespace Common.Socket
                     count = messageBuffer.Length - offset;
                 }
 
-                await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), WebSocketMessageType.Text, lastMessage, CancellationToken.None);
                 LogStatus(false, messageBuffer, messageBuffer.Length);
+
+                await webSocket.SendAsync(new ArraySegment<byte>(messageBuffer, offset, count), WebSocketMessageType.Text, lastMessage, CancellationToken.None);
+                countTime.Stop();
+                if (!string.IsNullOrEmpty(interfaceName))
+                {
+                    string timeMsg = "\r\n [" + interfaceName + "] Time-Counsuming:" + countTime.Elapsed.TotalMilliseconds + "  (毫秒)";
+                    Console.WriteLine(timeMsg);
+                    FileHelper.WriteLog(timeMsg);
+                }
             }
 
 
@@ -89,6 +100,7 @@ namespace Common.Socket
 
         private static async Task Receive(ClientWebSocket webSocket)
         {
+            
             byte[] buffer = new byte[receiveChunkSize];
             while (webSocket.State == WebSocketState.Open)
             {
@@ -109,18 +121,26 @@ namespace Common.Socket
             lock (consoleLock)
             {
                 Console.ForegroundColor = receiving ? ConsoleColor.Green : ConsoleColor.Gray;
-                Console.WriteLine("\r\n   " + "{0} {1} bytes... ", receiving ? "Received" : "Sent", length);
-
+                string dataLength = string.Format("\r\n   " + "{0} {1} bytes... ", receiving ? "Received" : "Sent", length);
+                Console.WriteLine(dataLength);
+                FileHelper.WriteLog("\r\n" + dataLength);
                 if (verbose)
                 {
-                    Console.WriteLine("\r\n   " + (receiving ? "<-" :"->") + "byteArray：["+BitConverter.ToString(buffer, 0, length)+"]");
+                    string byteStr = string.Format("\r\n   " + (receiving ? "<-" : "->") + "byteArray：[" + BitConverter.ToString(buffer, 0, length) + "]");
+                    Console.WriteLine(byteStr);
+                    FileHelper.WriteLog("\r\n" + byteStr);
 
-                    Console.WriteLine("\r\n   " + (receiving ? "<-" : "->") + "Base64：[" + Encoding.Default.GetString(buffer, 0, length)+"]");
+                    string baseStr = string.Format("\r\n   " + (receiving ? "<-" : "->") + "Base64：[" + Encoding.Default.GetString(buffer, 0, length) + "]");
+                    Console.WriteLine(baseStr);
+                    FileHelper.WriteLog("\r\n" + baseStr);
+
                     //string s = "H4sIAAAAAAAEAAEVAOr/5rKh5pyJ5o6l5pS25Yiw5pWw5o2ug4v/CxUAAAA=";
                     //Console.WriteLine(ZipHelper.GZipDecompressString(s));
                     if(receiving)
                     {
-                        Console.WriteLine("\r\n   " + (receiving ? "<-" : "->") + "UTF8：[" + ZipHelper.GZipDecompressString(Encoding.UTF8.GetString(buffer, 0, length))+"]");
+                        //string strMsg = string.Format("\r\n   " + (receiving ? "<-" : "->") + "UTF8：[" + ZipHelper.GZipDecompressString(Encoding.UTF8.GetString(buffer, 0, length)) + "]");
+                        Console.WriteLine("\r\n   " + (receiving ? "<-" : "->") + "UTF8：[" + ZipHelper.GZipDecompressString(Encoding.UTF8.GetString(buffer, 0, length)) + "]");
+                        FileHelper.WriteLog("\r\n \r\n  " + (receiving ? "<-" : "->") + "UTF8：[" + ZipHelper.GZipDecompressString(Encoding.UTF8.GetString(buffer, 0, length)) + "]");
                     }  
                     Thread.Sleep(100);
                     Console.WriteLine("\r\n 请按任意键继续,按q推出");

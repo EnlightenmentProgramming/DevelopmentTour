@@ -76,5 +76,25 @@ namespace Common
             }
         }
 
+
+        public static void WriteLog(string msg)
+        {
+            string fileName = DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            FileStream fs = new FileStream(path + "\\log\\" + fileName, FileMode.Append);
+            StreamWriter write = new StreamWriter(fs, Encoding.UTF8);
+            write.Write(msg);
+            write.Flush();
+            write.Close();
+            fs.Close();
+        }
+
+        public static void WriteLog(byte[] msg)
+        {
+            string fileName = DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            FileStream fs = new FileStream(path + "\\log\\" + fileName, FileMode.Append);
+            fs.Write(msg, 0, msg.Length);
+            fs.Flush();
+            fs.Close();
+        }
     }
 }

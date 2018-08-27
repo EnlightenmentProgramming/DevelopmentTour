@@ -23,7 +23,7 @@ namespace AgentTestServer
 
                 Dictionary<int, string[]> packDic = FileHelper.ReadFile("Packet.txt");
 
-                string sendMsg = "";
+                string sendMsg = "",name="";
                 while (true)
                 {
                     Console.WriteLine(" 输入指定的序号，调用对应接口");
@@ -47,17 +47,20 @@ namespace AgentTestServer
 
                     if (int.TryParse(Console.ReadLine(), out packNum))
                     {
-                        switch(packNum)
-                        {
-                            case 1:
-                                //Console.WriteLine("调用1");
-                                sendMsg = packDic[1][1];
-                                break;
-                            case 2:
-                                sendMsg = packDic[2][1];
-                                break;
-                        }
-                        WebSocketClient.Send(sendMsg).GetAwaiter();
+                        sendMsg = packDic[packNum][1];
+                        name = packDic[packNum][0];
+                        //switch (packNum)
+                        //{
+                        //    case 1:
+                        //        //Console.WriteLine("调用1");
+                        //        sendMsg = packDic[1][1];
+                        //        name = packDic[1][]
+                        //        break;
+                        //    case 2:
+                        //        sendMsg = packDic[2][1];
+                        //        break;
+                        //}
+                        WebSocketClient.Send(sendMsg,name).GetAwaiter();
                     }
 
                     if (Console.ReadLine().Trim().ToUpper() == "Q")
