@@ -102,18 +102,51 @@ namespace Common.Socket
         {
             
             byte[] buffer = new byte[receiveChunkSize];
+            //while (webSocket.State == WebSocketState.Open)
+            //{
+            //    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            //    if (result.MessageType == WebSocketMessageType.Close)
+            //    {
+            //        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+            //    }
+            //    else
+            //    {
+            //        LogStatus(true, buffer, result.Count);
+            //    }
+            //}
+
+
+
             while (webSocket.State == WebSocketState.Open)
             {
-                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                if (result.MessageType == WebSocketMessageType.Close)
+                var stringResult = new StringBuilder();
+
+
+                WebSocketReceiveResult result;
+                do
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-                }
-                else
-                {
-                    LogStatus(true, buffer, result.Count);
-                }
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await
+                            webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                        //CallOnDisconnected();
+                    }
+                    else
+                    {
+                        var str = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        stringResult.Append(str);
+                    }
+
+                } while (!result.EndOfMessage);
+
+                byte[] resultBye = Encoding.UTF8.GetBytes(stringResult.ToString());
+                LogStatus(true, resultBye, resultBye.Length);
+                //CallOnMessage(stringResult);
+
             }
+
         }
 
         private static void LogStatus(bool receiving, byte[] buffer, int length)
