@@ -11,7 +11,7 @@ namespace Common.Socket
     public class WebSocketClient
     {
         private static object consoleLock = new object();
-        private const int sendChunkSize = 256;
+        private const int sendChunkSize = 1024;
         private const int receiveChunkSize = 1024;
         private const bool verbose = true;
         private static readonly TimeSpan delay = TimeSpan.FromMilliseconds(1000);
